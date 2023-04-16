@@ -11,6 +11,5 @@ spotipy==2.23.0
 sqlparse==0.4.3
 tzdata==2023.3
 urllib3==1.26.15
-RPi.GPIO==0.7.1
-GPIOSimulator==0.1
--e git+https://github.com/lthiery/SPI-Py.git#egg=spi-pi
+spidev==3.6
+mfrc522==0.0.7
