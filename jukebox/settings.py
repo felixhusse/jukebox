@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-njr7*34(gfgqr&##0=&w+h+yu47v7wejok^jc$o1s6_^m$xrqj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["jukebox.fritz.box"]
 
 
 # Application definition
