@@ -8,10 +8,6 @@
             {% if auth_url %}
                 <a type="button" class="btn btn-primary" id="sign_in" href="{{ auth_url }}">Sign in</a>
             {% else %}
-
-
-
-
                 {% for device in data.devices %}
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="speakers" id="{{ device.id }}" value="{{ device.id }}">
@@ -28,10 +24,16 @@
                     <button type="button" class="btn btn-primary" id="stop_song">Stop</button>
                 </div>
 
-            {% endif %}
-            <div id="results">
 
+            {% endif %}
+
+        </div>
+        <div class="row justify-content-center">
+            <div class="form-group">
+                <label for="spotify_uid">Spotify UID</label>
+                <input type="text" class="form-control" id="spotify_uid"  placeholder="Enter spotify uid">
             </div>
+            <button type="button" class="btn btn-primary" id="train_card">Train card</button>
         </div>
 
     </div>
@@ -50,7 +52,7 @@
         $.ajax({
             url: "/app/play?speaker="+speaker_id,
             success: function(data){
-              update_results(data.result);
+              update_messages(data.messages);
             },
         });
       });
@@ -59,10 +61,20 @@
         $.ajax({
             url: "/app/stop",
             success: function(data){
-              update_results(data.result);
+              update_messages(data.messages);
             },
         });
       });
+
+    $("#train_card").click(function(){
+        $.ajax({
+            url: "/app/train",
+            success: function(data){
+              update_messages(data.messages);
+            },
+        });
+      });
+
 
 </script>
 {% endblock inline_javascript %}
