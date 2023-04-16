@@ -67,7 +67,7 @@
       });
 
     $("#train_card").click(function(){
-        var spotify_uid = $('input[name="spotify_uid"]').val()
+        var spotify_uid = $('#spotify_uid').val();
         $.ajax({
             url: "/app/train?spotify_uid="+spotify_uid,
             success: function(data){
