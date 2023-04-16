@@ -67,12 +67,15 @@
       });
 
     $("#train_card").click(function(){
-        show_spinner("Waiting for card...")
+
+        $("#train_card").html("").append('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Waiting for card...');
+        show_spinner("Waiting for card...");
         var spotify_uid = $('#spotify_uid').val();
         $.ajax({
             url: "/app/train?spotify_uid="+spotify_uid,
             success: function(data){
               update_messages(data.messages);
+              $("#train_card").html("").append('Train card');
             },
         });
       });
