@@ -1,0 +1,16 @@
+asgiref==3.6.0
+async-timeout==4.0.2
+certifi==2022.12.7
+charset-normalizer==3.1.0
+Django==4.2
+idna==3.4
+redis==4.5.4
+requests==2.28.2
+six==1.16.0
+spotipy==2.23.0
+sqlparse==0.4.3
+tzdata==2023.3
+urllib3==1.26.15
+RPi.GPIO==0.7.1
+GPIOSimulator==0.1
+-e git+https://github.com/lthiery/SPI-Py.git#egg=spi-pi
