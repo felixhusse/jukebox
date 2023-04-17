@@ -1,3 +1,4 @@
+import spotipy.cache_handler
 from spotipy.oauth2 import SpotifyOAuth
 try:
     import RPi.GPIO as GPIO
@@ -11,17 +12,17 @@ class SpotifyConnection:
     def __init__(self, scope="user-read-playback-state,user-modify-playback-state"):
         if Configuration.objects.all().count() == 1:
             configuration = Configuration.objects.first()
+            self.cache_handler = spotipy.cache_handler.CacheFileHandler()
             self.auth_manager = SpotifyOAuth(scope=scope,
                                             client_id=configuration.spotify_client_id,
                                             client_secret=configuration.spotify_client_secret,
                                             redirect_uri=configuration.spotify_callback_url,
-                                            show_dialog=True)
+                                            show_dialog=True,
+                                            cache_handler=self.cache_handler)
             self.is_configured = True
         else:
             self.is_configured = False
 
-    def set_cache_handler(self, cache_handler):
-        self.auth_manager.cache_handler = cache_handler
     def get_auth_manager(self):
         return self.auth_manager
 

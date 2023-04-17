@@ -22,14 +22,11 @@ def home(request):
             {}
         )
 
-    cache_handler = spotipy.cache_handler.DjangoSessionCacheHandler(request=request)
-    spotify_connection.set_cache_handler(cache_handler=cache_handler)
-
     if request.GET.get('code'):
         spotify_connection.get_auth_manager().get_access_token(request.GET.get('code'))
         return redirect("app:home")
 
-    if not spotify_connection.get_auth_manager().validate_token(cache_handler.get_cached_token()):
+    if not spotify_connection.get_auth_manager().validate_token(spotify_connection.get_auth_manager().get_cached_token()):
         auth_url = spotify_connection.get_auth_manager().get_authorize_url()
         return render(
             request,
