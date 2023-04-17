@@ -20,18 +20,20 @@ class RFIDReaderThread(Thread):
         print('RFIDReaderThread running')
         reader = SimpleMFRC522()
         configuration = Configuration.objects.first()
-        if configuration:
-            print("Configuration found")
-            while not self.event.is_set():
-                id, text = reader.read_no_block()
-                if id:
-                    musiccard = MusicCard.objects.filter(card_uid=id)
-                    if musiccard:
-                        scope = "user-read-playback-state,user-modify-playback-state"
-                        spotify_connection = SpotifyConnection(scope=scope)
-                        spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
-                        spotify.start_playback(uris=['spotify:track:{}'.format(musiccard.first().spotify_uid)], device_id='1b7e55f7da9e053ea3754c7f32aebf2d88274e1a')
-                        print("Song started");
-                time.sleep(0.5)
-
+        try:
+            if configuration:
+                print("Configuration found")
+                while not self.event.is_set():
+                    id, text = reader.read_no_block()
+                    if id:
+                        musiccard = MusicCard.objects.filter(card_uid=id)
+                        if musiccard:
+                            scope = "user-read-playback-state,user-modify-playback-state"
+                            spotify_connection = SpotifyConnection(scope=scope)
+                            spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
+                            spotify.start_playback(uris=['spotify:track:{}'.format(musiccard.first().spotify_uid)], device_id='1b7e55f7da9e053ea3754c7f32aebf2d88274e1a')
+                            print("Song started");
+                    time.sleep(0.5)
+        finally:
+            GPIO.cleanup()
         print("Finished")
