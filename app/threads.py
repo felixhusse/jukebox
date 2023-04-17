@@ -9,7 +9,6 @@ except ImportError:
     from .fake_rfc import SimpleMFRC522
 
 class RFIDReaderThread(Thread):
-
     def __init__(self, event):
         super(RFIDReaderThread, self).__init__(name="RFID_Thread", daemon=True)
         # store the event
@@ -31,7 +30,7 @@ class RFIDReaderThread(Thread):
                         scope = "user-read-playback-state,user-modify-playback-state"
                         spotify_connection = SpotifyConnection(scope=scope)
                         spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
-                        spotify.start_playback(uris=['spotify:track:{}'.format(musiccard.first().spotify_uid)])
+                        spotify.start_playback(uris=['spotify:track:{}'.format(musiccard.first().spotify_uid)], device_id='1b7e55f7da9e053ea3754c7f32aebf2d88274e1a')
                         print("Song started");
                 time.sleep(0.5)
 
