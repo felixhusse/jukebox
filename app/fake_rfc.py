@@ -7,4 +7,4 @@ class SimpleMFRC522:
 
     def read_no_block(self):
         time.sleep(0.5)
-        return "dummy_card_id", "dummy_card_value"
+        return None, None
