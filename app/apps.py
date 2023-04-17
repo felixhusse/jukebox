@@ -1,18 +1,17 @@
 from django.apps import AppConfig
-from threading import Thread
-
-
-class RFIDReaderThread(Thread):
-
-    def run(self):
-        print('RFIDReaderThread running')
-
-
+import threading
+from .threads import RFIDReaderThread
 
 class AppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'app'
 
     def ready(self):
+        event = threading.Event()
         from app.models import Configuration
-        RFIDReaderThread().start()
+        thread = RFIDReaderThread(event)
+        thread.start()
+        print("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
+
+
+

@@ -3,10 +3,12 @@ from django.contrib import messages
 from django.http import JsonResponse
 import pprint
 import spotipy
+import threading
 from spotipy.oauth2 import SpotifyOAuth
 from .models import Configuration
 from .forms import ConfigurationForm
 from .services import SpotifyConnection, RFIDCardReader
+from .threads import RFIDReaderThread
 
 scope = "user-read-playback-state,user-modify-playback-state"
 spotify_connection = SpotifyConnection(scope=scope)
@@ -72,6 +74,29 @@ def train_card(request):
         messages.add_message(request, messages.ERROR, "Named exception")
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
 
+def stop_thread(request):
+    threads = threading.enumerate()
+    for thread in threads:
+        if thread.name == "RFID_Thread":
+            thread.event.set()
+            messages.add_message(request, messages.SUCCESS, "Thread stopped")
+
+    return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
+
+def start_thread(request):
+    threads = threading.enumerate()
+    for thread in threads:
+        if thread.name == "RFID_Thread":
+            messages.add_message(request, messages.SUCCESS, "Thread already running")
+            return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
+
+    event = threading.Event()
+    thread = RFIDReaderThread(event)
+    thread.start()
+    messages.add_message(request, messages.SUCCESS, "Thread started")
+    return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
+
+
 
 def configure_antonia(request):
     if Configuration.objects.all().count() == 0:
@@ -98,6 +123,8 @@ def configure_antonia(request):
             "form": form
         }
         return render(request, 'pages/configuration.html', context)
+
+
 
 
 def prepare_messages(request):
