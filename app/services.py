@@ -5,7 +5,7 @@ try:
     from mfrc522 import SimpleMFRC522
 except ImportError:
     import app.fake_gpio as GPIO
-    from .fake_rfc import SimpleMFRC522
+    from .mockups import SimpleMFRC522
 
 from .models import Configuration, MusicCard
 class SpotifyConnection:

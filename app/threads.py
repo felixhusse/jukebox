@@ -6,11 +6,13 @@ try:
     from mfrc522 import SimpleMFRC522
 except ImportError:
     import app.fake_gpio as GPIO
-    from .fake_rfc import SimpleMFRC522
+    from .mockups import SimpleMFRC522
+
 
 class RFIDReaderThread(Thread):
     def __init__(self, event):
         super(RFIDReaderThread, self).__init__(name="RFID_Thread", daemon=True)
+        self.reader = SimpleMFRC522()
         # store the event
         self.event = event
 
@@ -18,13 +20,13 @@ class RFIDReaderThread(Thread):
         from app.models import Configuration, MusicCard
         from app.services import SpotifyConnection
         print('RFIDReaderThread running')
-        reader = SimpleMFRC522()
+
         configuration = Configuration.objects.first()
         try:
             if configuration:
                 print("Configuration found")
                 while not self.event.is_set():
-                    id, text = reader.read_no_block()
+                    id = self.reader.read_id_no_block()
                     if id:
                         musiccard = MusicCard.objects.filter(card_uid=id)
                         if musiccard:
@@ -35,5 +37,5 @@ class RFIDReaderThread(Thread):
                             print("Song started");
                     time.sleep(0.5)
         finally:
-            GPIO.cleanup()
+            self.reader.READER.Close_MFRC522()
         print("Finished")
