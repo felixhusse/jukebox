@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 import threading
-from .threads import RFIDReaderThread
+from app.threads import RFIDReaderThread
 
 class AppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
@@ -8,7 +8,6 @@ class AppConfig(AppConfig):
 
     def ready(self):
         event = threading.Event()
-        from app.models import Configuration
         thread = RFIDReaderThread(event)
         thread.start()
         print("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))

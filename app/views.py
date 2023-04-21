@@ -45,10 +45,17 @@ def home(request):
 
 def play_song(request):
     spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
+
+    urn = 'spotify:album:1cOFQWQW6BHrLbSiuQfsdO'
+    album = spotify.album(urn)
+    tracks = []
+    for track in album['tracks']['items']:
+        tracks.append(track['uri'])
+
     if request.GET.get('speaker'):
-        spotify.start_playback(uris=['spotify:track:6jk4wqqbpSJu6Thlsa3GLo'], device_id=request.GET.get('speaker'))
+        spotify.start_playback(uris=tracks, device_id=request.GET.get('speaker'))
     else:
-        spotify.start_playback(uris=['spotify:track:6jk4wqqbpSJu6Thlsa3GLo'])
+        spotify.start_playback(uris=['spotify:track:70JdQ8artpCN4NBn7Wt1Uw'])
     messages.add_message(request, messages.SUCCESS, "Song started")
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
 
