@@ -69,5 +69,6 @@ class RFIDCardReader:
                 )
                 card.save()
         finally:
+            self.reader.READER.Close_MFRC522()
             GPIO.cleanup()
 
