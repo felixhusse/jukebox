@@ -37,7 +37,7 @@ class RFIDReaderThread(Thread):
                     if not uid and playing_song:
                         spotify_player.stop_song()
                         playing_song = False
-                    time.sleep(0.5)
+                    time.sleep(1.0)
         finally:
             self.reader.READER.Close_MFRC522()
         print("Finished")
