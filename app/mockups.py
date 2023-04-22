@@ -4,7 +4,7 @@ class SimpleMFRC522:
 
     READER = None
 
-    id_list = ("444","123",None,None,None)
+    id_list = ("444", "123", None, None, None)
 
     def __init__(self):
         self.READER = MFRC522()
