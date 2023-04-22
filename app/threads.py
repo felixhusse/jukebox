@@ -41,4 +41,5 @@ class RFIDReaderThread(Thread):
                     time.sleep(1.0)
         finally:
             self.reader.READER.Close_MFRC522()
+            GPIO.cleanup()
         print("Finished")
