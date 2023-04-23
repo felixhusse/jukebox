@@ -10,5 +10,12 @@ class Configuration(models.Model):
 
 
 class MusicCard(models.Model):
+    MUSIC_TYPE = [
+        ("al", "Album"),
+        ("tr", "Track"),
+        ("pl", "Playlist"),
+    ]
     spotify_uid = models.CharField(max_length=200)
     card_uid = models.CharField(max_length=200)
+    music_type = models.CharField(max_length=2, choices=MUSIC_TYPE, default="tr")
+
