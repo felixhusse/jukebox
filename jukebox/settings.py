@@ -81,6 +81,20 @@ TEMPLATES = [
     },
 ]
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": env('LOG_LEVEL', 'WARNING'),
+    },
+}
+
 WSGI_APPLICATION = 'jukebox.wsgi.application'
 
 STORAGES = {
