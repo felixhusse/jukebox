@@ -2,10 +2,10 @@ import spotipy.cache_handler
 from spotipy.oauth2 import SpotifyOAuth
 try:
     import RPi.GPIO as GPIO
-    from mfrc522 import SimpleMFRC522
+    from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
 except ImportError:
-    from .mockups import SimpleMFRC522, GPIO
-    from .rfcreader import HigherGainSimpleMFRC522
+    from app.mockups import SimpleMFRC522, GPIO
+
 from .models import Configuration, MusicCard
 
 class SpotifyConnection:
@@ -52,7 +52,7 @@ class SpotifyPlayer:
 
 class RFIDCardReader:
     def __init__(self):
-        self.reader = HigherGainSimpleMFRC522()
+        self.reader = SimpleMFRC522()
 
     def train_card(self, spotify_uid):
         try:

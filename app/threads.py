@@ -2,16 +2,15 @@ from threading import Thread, Event
 import time
 try:
     import RPi.GPIO as GPIO
-    from mfrc522 import SimpleMFRC522
+    from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
 except ImportError:
     from .mockups import SimpleMFRC522, GPIO
-    from .rfcreader import HigherGainSimpleMFRC522
 
 class RFIDReaderThread(Thread):
     reader = None
     def __init__(self, event):
         super(RFIDReaderThread, self).__init__(name="RFID_Thread", daemon=True)
-        self.reader = HigherGainSimpleMFRC522()
+        self.reader = SimpleMFRC522()
         # store the event
         self.event = event
 
