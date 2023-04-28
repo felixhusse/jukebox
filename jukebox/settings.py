@@ -91,7 +91,7 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": env('LOG_LEVEL', 'WARNING'),
+        "level": env('LOG_LEVEL'),
     },
 }
 
