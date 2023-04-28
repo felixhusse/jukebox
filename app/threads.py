@@ -5,12 +5,13 @@ try:
     from mfrc522 import SimpleMFRC522
 except ImportError:
     from .mockups import SimpleMFRC522, GPIO
+    from .rfcreader import HigherGainSimpleMFRC522
 
 class RFIDReaderThread(Thread):
     reader = None
     def __init__(self, event):
         super(RFIDReaderThread, self).__init__(name="RFID_Thread", daemon=True)
-        self.reader = SimpleMFRC522()
+        self.reader = HigherGainSimpleMFRC522()
         # store the event
         self.event = event
 
@@ -48,5 +49,4 @@ class RFIDReaderThread(Thread):
                     time.sleep(1.0)
         finally:
             self.reader.READER.Close_MFRC522()
-            GPIO.cleanup()
         print("Finished")
