@@ -27,7 +27,6 @@ class RFIDReaderThread(Thread):
         none_count = 0
         try:
             if configuration:
-                print("Configuration found")
                 while not self.event.is_set():
                     uid = self.reader.read_id_no_block()
                     if uid and not playing_song:

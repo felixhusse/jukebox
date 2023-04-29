@@ -16,8 +16,9 @@ class ConfigurationForm(forms.ModelForm):
         "placeholder": "callback url"
     }))
 
+
     class Meta:
         model = Configuration
         fields = [
-            'spotify_client_id', 'spotify_client_secret', 'spotify_callback_url'
+            'spotify_client_id', 'spotify_client_secret', 'spotify_callback_url',
         ]
