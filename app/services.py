@@ -56,7 +56,14 @@ class SpotifyPlayer:
             self.logger.error("%s : %s".format(ex_type, ex_value))
 
     def stop_song(self):
-        self.spotipy_spotify.pause_playback()
+        try:
+            self.spotipy_spotify.pause_playback()
+        except SpotifyException as e:
+            self.logger.error("Failed to play song: " + str(e))
+        except Exception as e:
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            self.logger.error("%s : %s".format(ex_type, ex_value))
+
 
 
 class RFIDCardReader:
