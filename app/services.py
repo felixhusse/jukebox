@@ -1,5 +1,8 @@
+import logging
+import sys
 import spotipy.cache_handler
 from spotipy.oauth2 import SpotifyOAuth
+from spotipy.exceptions import SpotifyException
 try:
     import RPi.GPIO as GPIO
     from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
@@ -9,6 +12,7 @@ except ImportError:
 from .models import Configuration, MusicCard
 
 class SpotifyConnection:
+    logger = logging.getLogger(__name__)
     def __init__(self, scope="user-read-playback-state,user-modify-playback-state"):
         if Configuration.objects.all().count() == 1:
             configuration = Configuration.objects.first()
@@ -43,8 +47,13 @@ class SpotifyPlayer:
                 track_uris.append(track['uri'])
         else:
             track_uris.append('spotify:{}'.format(spotify_uid))
-
-        self.spotipy_spotify.start_playback(uris=track_uris)
+        try:
+            self.spotipy_spotify.start_playback(uris=track_uris)
+        except SpotifyException as e:
+            self.logger.error("Failed to play song: " + str(e))
+        except Exception as e:
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            self.logger.error("%s : %s".format(ex_type, ex_value))
 
     def stop_song(self):
         self.spotipy_spotify.pause_playback()
