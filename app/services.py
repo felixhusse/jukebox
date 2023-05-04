@@ -32,7 +32,7 @@ class SpotifyConnection:
 
 
 class SpotifyPlayer:
-
+    logger = logging.getLogger(__name__)
     spotipy_spotify = None
 
     def __init__(self, spotiy_connection):
