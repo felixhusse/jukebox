@@ -1,6 +1,10 @@
+import sys
 from threading import Thread, Event
 import time
 import logging
+
+from spotipy import SpotifyException
+
 try:
     import RPi.GPIO as GPIO
     from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
@@ -29,26 +33,31 @@ class RFIDReaderThread(Thread):
             if configuration:
                 while not self.event.is_set():
                     uid = self.reader.read_id_no_block()
-                    if uid and not playing_song:
-                        self.logger.debug("Card is read")
-                        musiccard = MusicCard.objects.filter(card_uid=uid)
-                        if musiccard:
-                            spotify_player.play_song(musiccard.first().spotify_uid)
-                            playing_song = True
+                    try:
+                        if uid and not playing_song:
+                            self.logger.debug("Card is read")
+                            musiccard = MusicCard.objects.filter(card_uid=uid)
+                            if musiccard:
+                                spotify_player.play_song(musiccard.first().spotify_uid)
+                                playing_song = True
+                                none_count = 0
+                                self.logger.info("Song started")
+                        elif uid and playing_song:
                             none_count = 0
-                            self.logger.info("Song started")
-                    elif uid and playing_song:
-                        none_count = 0
-                    elif not uid and playing_song:
-                        none_count = none_count + 1
-                        if none_count > 1:
-                            spotify_player.stop_song()
-                            playing_song = False
-                            none_count = 0
-                            self.logger.info("Song stopped")
+                        elif not uid and playing_song:
+                            none_count = none_count + 1
+                            if none_count > 1:
+                                spotify_player.stop_song()
+                                playing_song = False
+                                none_count = 0
+                                self.logger.info("Song stopped")
+                    except SpotifyException as e:
+                        self.logger.error("Spotify Exception: " + str(e))
 
                     time.sleep(1.0)
+        except Exception as e:
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            self.logger.error("%s : %s".format(ex_type, ex_value))
         finally:
-
             self.reader.READER.Close_MFRC522()
         print("Finished")

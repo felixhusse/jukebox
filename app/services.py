@@ -47,23 +47,10 @@ class SpotifyPlayer:
                 track_uris.append(track['uri'])
         else:
             track_uris.append('spotify:{}'.format(spotify_uid))
-        try:
-            self.spotipy_spotify.start_playback(uris=track_uris)
-        except SpotifyException as e:
-            self.logger.error("Failed to play song: " + str(e))
-        except Exception as e:
-            ex_type, ex_value, ex_traceback = sys.exc_info()
-            self.logger.error("%s : %s".format(ex_type, ex_value))
+        self.spotipy_spotify.start_playback(uris=track_uris)
 
     def stop_song(self):
-        try:
-            self.spotipy_spotify.pause_playback()
-        except SpotifyException as e:
-            self.logger.error("Failed to play song: " + str(e))
-        except Exception as e:
-            ex_type, ex_value, ex_traceback = sys.exc_info()
-            self.logger.error("%s : %s".format(ex_type, ex_value))
-
+        self.spotipy_spotify.pause_playback()
 
 
 class RFIDCardReader:
