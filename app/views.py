@@ -10,10 +10,12 @@ from .forms import ConfigurationForm
 from .services import SpotifyConnection, RFIDCardReader
 from .threads import RFIDReaderThread
 
-scope = "user-read-playback-state,user-modify-playback-state"
-spotify_connection = SpotifyConnection(scope=scope)
+
 
 def home(request):
+    scope = "user-read-playback-state,user-modify-playback-state"
+    spotify_connection = SpotifyConnection(scope=scope)
+
     if not spotify_connection.is_configured:
         messages.add_message(request, messages.WARNING, "Please configure system!")
         return render(
@@ -44,6 +46,8 @@ def home(request):
 
 
 def play_song(request):
+    scope = "user-read-playback-state,user-modify-playback-state"
+    spotify_connection = SpotifyConnection(scope=scope)
     spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
 
     urn = 'spotify:album:1cOFQWQW6BHrLbSiuQfsdO'
@@ -61,6 +65,8 @@ def play_song(request):
 
 
 def stop_song(request):
+    scope = "user-read-playback-state,user-modify-playback-state"
+    spotify_connection = SpotifyConnection(scope=scope)
     spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
 
     spotify.pause_playback()
