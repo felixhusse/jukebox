@@ -28,12 +28,12 @@ pip install -r requirements-pi.txt
 cp $ENVIRONMENT_FILE $WORKING_DIR/.env
 # Set values for environment variables in .env
 SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
-sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" $WORKING_DIR/.env
+sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/g" $WORKING_DIR/.env
 
-sed -i "s/^Description=.*/Description=Gunicorn instance serving $APP_NAME/" $SERVICE_FILE
-sed -i "s/^User=.*/User=$USER/" $SERVICE_FILE
-sed -i "s/^WorkingDirectory=.*/WorkingDirectory=$WORKING_DIR/" $SERVICE_FILE
-sed -i "s/^ExecStart=.*/ExecStart=$VIRTUALENV_PATH/bin/gunicorn --access-logfile - --workers 3 --bind unix:$WORKING_DIR/$APP_NAME.sock $APP_NAME.wsgi:application/" $SERVICE_FILE
+sed -i "s/^Description=.*/Description=Gunicorn instance serving $APP_NAME/g" $SERVICE_FILE
+sed -i "s/^User=.*/User=$USER/g" $SERVICE_FILE
+sed -i "s/^WorkingDirectory=.*/WorkingDirectory=$WORKING_DIR/g" $SERVICE_FILE
+sed -i "s/^ExecStart=.*/ExecStart=$VIRTUALENV_PATH/bin/gunicorn --access-logfile - --workers 3 --bind unix:$WORKING_DIR/$APP_NAME.sock $APP_NAME.wsgi:application/g" $SERVICE_FILE
 
 
 # Reload the Systemd configuration
