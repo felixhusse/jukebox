@@ -31,19 +31,26 @@ echo "Generating Secret Key"
 SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
 sed -i "s/SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/g" $WORKING_DIR/.env
 
-cp $APP_NAME.service $SERVICE_FILE
+sudo cp $APP_NAME.service $SERVICE_FILE
 
 echo "Generating Service File"
 sed -i "s@Description=.*@Description=Gunicorn instance serving $APP_NAME@g" $SERVICE_FILE
 sed -i "s@User=.*@User=$USER@g" $SERVICE_FILE
 sed -i "s@WorkingDirectory=.*@WorkingDirectory=$WORKING_DIR@g" $SERVICE_FILE
-sed -i "s@ExecStart=.*@ExecStart=$VIRTUALENV_PATH/bin/gunicorn --access-logfile - --workers 3 --bind unix:$WORKING_DIR/$APP_NAME.sock $APP_NAME.wsgi:application@g" $SERVICE_FILE
+sed -i "s@ExecStart=.*@ExecStart=$VIRTUALENV_PATH/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock $APP_NAME.wsgi:application@g" $SERVICE_FILE
+
+echo "Copy Socket"
+sudo cp "jukebox.socket" "/etc/systemd/system/jukebox.socket"
+
+sudo systemctl daemon-reload
+sudo systemctl start jukebox.socket
+sudo systemctl enable jukebox.socket
 
 # Reload the Systemd configuration
-sudo systemctl daemon-reload
+
 
 # Start the new service and enable it to start at boot
-#sudo systemctl start $APP_NAME
+sudo systemctl start $APP_NAME
 #sudo systemctl enable $APP_NAME
 
 echo "The $APP_NAME service has been installed and started."
