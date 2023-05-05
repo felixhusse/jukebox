@@ -24,6 +24,8 @@ source "$VIRTUALENV_PATH"/bin/activate
 pip install -r requirements.txt
 pip install -r requirements-pi.txt
 
+
+
 # Copy the template .env.example file to .env
 cp $ENVIRONMENT_FILE $WORKING_DIR/.env
 # Set values for environment variables in .env
@@ -43,14 +45,15 @@ echo "Copy Socket"
 sudo cp "jukebox.socket" "/etc/systemd/system/jukebox.socket"
 
 sudo systemctl daemon-reload
-sudo systemctl start jukebox.socket
-sudo systemctl enable jukebox.socket
+python manage.py migrate
+
+# sudo systemctl enable jukebox.socket
 
 # Reload the Systemd configuration
 
 
 # Start the new service and enable it to start at boot
-sudo systemctl start $APP_NAME
-#sudo systemctl enable $APP_NAME
+# sudo systemctl start $APP_NAME
+# sudo systemctl enable $APP_NAME
 
 echo "The $APP_NAME service has been installed and started."
