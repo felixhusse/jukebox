@@ -45,15 +45,18 @@ echo "Copy Socket"
 sudo cp "jukebox.socket" "/etc/systemd/system/jukebox.socket"
 
 sudo systemctl daemon-reload
-python manage.py migrate
 
-# sudo systemctl enable jukebox.socket
+python manage.py migrate
+python manage.py collectstatic
+
+
 
 # Reload the Systemd configuration
 
 
 # Start the new service and enable it to start at boot
-# sudo systemctl start $APP_NAME
+sudo systemctl start $APP_NAME
+sudo systemctl enable jukebox.socket
 # sudo systemctl enable $APP_NAME
 
 echo "The $APP_NAME service has been installed and started."
