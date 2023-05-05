@@ -40,7 +40,7 @@ sed -i "s@WorkingDirectory=.*@WorkingDirectory=$WORKING_DIR@g" $SERVICE_FILE
 sed -i "s@ExecStart=.*@ExecStart=$VIRTUALENV_PATH/bin/gunicorn --access-logfile - --workers 3 --bind unix:$WORKING_DIR/$APP_NAME.sock $APP_NAME.wsgi:application@g" $SERVICE_FILE
 
 # Reload the Systemd configuration
-#sudo systemctl daemon-reload
+sudo systemctl daemon-reload
 
 # Start the new service and enable it to start at boot
 #sudo systemctl start $APP_NAME
