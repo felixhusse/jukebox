@@ -7,8 +7,8 @@ APP_NAME=jukebox
 USER=pi
 WORKING_DIR=$(pwd)
 VIRTUALENV_PATH=$WORKING_DIR/venv
-#SERVICE_FILE="/etc/systemd/system/$APP_NAME.service"
-SERVICE_FILE="$WORKING_DIR/$APP_NAME.service"
+SERVICE_FILE="/etc/systemd/system/$APP_NAME.service"
+#SERVICE_FILE="$WORKING_DIR/$APP_NAME.service"
 ENVIRONMENT_FILE=$WORKING_DIR/.env.template
 
 
@@ -30,6 +30,8 @@ cp $ENVIRONMENT_FILE $WORKING_DIR/.env
 echo "Generating Secret Key"
 SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
 sed -i "s/SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/g" $WORKING_DIR/.env
+
+cp $APP_NAME.service $SERVICE_FILE
 
 echo "Generating Service File"
 sed -i "s@Description=.*@Description=Gunicorn instance serving $APP_NAME@g" $SERVICE_FILE
