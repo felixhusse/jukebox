@@ -17,7 +17,7 @@ ENVIRONMENT_FILE=$WORKING_DIR/.env.template
 sudo apt-get update
 sudo apt-get install -y python3 python3-pip
 sudo pip install virtualenv
-python3 -m venv -p "$VIRTUALENV_PATH"
+python3 -m venv "$VIRTUALENV_PATH"
 source "$VIRTUALENV_PATH"/bin/activate
 
 # Install the Django app dependencies
