@@ -34,10 +34,10 @@ sed -i "s/SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/g" $WORKING_DIR/.env
 sudo cp $APP_NAME.service $SERVICE_FILE
 
 echo "Generating Service File"
-sed -i "s@Description=.*@Description=Gunicorn instance serving $APP_NAME@g" $SERVICE_FILE
-sed -i "s@User=.*@User=$USER@g" $SERVICE_FILE
-sed -i "s@WorkingDirectory=.*@WorkingDirectory=$WORKING_DIR@g" $SERVICE_FILE
-sed -i "s@ExecStart=.*@ExecStart=$VIRTUALENV_PATH/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock $APP_NAME.wsgi:application@g" $SERVICE_FILE
+sudo sed -i "s@Description=.*@Description=Gunicorn instance serving $APP_NAME@g" $SERVICE_FILE
+sudo sed -i "s@User=.*@User=$USER@g" $SERVICE_FILE
+sudo sed -i "s@WorkingDirectory=.*@WorkingDirectory=$WORKING_DIR@g" $SERVICE_FILE
+sudo sed -i "s@ExecStart=.*@ExecStart=$VIRTUALENV_PATH/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock $APP_NAME.wsgi:application@g" $SERVICE_FILE
 
 echo "Copy Socket"
 sudo cp "jukebox.socket" "/etc/systemd/system/jukebox.socket"
