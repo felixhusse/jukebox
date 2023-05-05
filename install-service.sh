@@ -27,9 +27,11 @@ pip install -r requirements-pi.txt
 # Copy the template .env.example file to .env
 cp $ENVIRONMENT_FILE $WORKING_DIR/.env
 # Set values for environment variables in .env
+echo "Generating Secret Key"
 SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
-sed -i "s@SECRET_KEY=.*@SECRET_KEY=$SECRET_KEY@g" $WORKING_DIR/.env
+sed -i "s/SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/g" $WORKING_DIR/.env
 
+echo "Generating Service File"
 sed -i "s@Description=.*@Description=Gunicorn instance serving $APP_NAME@g" $SERVICE_FILE
 sed -i "s@User=.*@User=$USER@g" $SERVICE_FILE
 sed -i "s@WorkingDirectory=.*@WorkingDirectory=$WORKING_DIR@g" $SERVICE_FILE
