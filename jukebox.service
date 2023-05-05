@@ -1,6 +1,6 @@
 [Unit]
 Description=Gunicorn instance serving xyz
-Requires=gunicorn.socket
+Requires=jukebox.socket
 After=network.target
 
 [Service]
