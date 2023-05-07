@@ -8,6 +8,7 @@ from app.views import (
     stop_thread,
     start_thread,
     configure_antonia,
+    manage_cards,
 
 )
 
@@ -21,4 +22,5 @@ urlpatterns = [
     path("app/thread/stop", view=stop_thread, name="stop_thread"),
     path("app/thread/start", view=start_thread, name="start_thread"),
     path("configure", view=configure_antonia, name="configure"),
+    path("cards", view=manage_cards, name="cards"),
 ]

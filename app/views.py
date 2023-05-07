@@ -5,7 +5,7 @@ import pprint
 import spotipy
 import threading
 from spotipy.oauth2 import SpotifyOAuth
-from .models import Configuration
+from .models import Configuration, MusicCard
 from .forms import ConfigurationForm
 from .services import SpotifyConnection, RFIDCardReader
 from .threads import RFIDReaderThread
@@ -133,7 +133,10 @@ def configure_antonia(request):
         }
         return render(request, 'pages/configuration.html', context)
 
+def manage_cards(request):
+    cards = MusicCard.objects.all()
 
+    return render(request, 'pages/cards.html', {"cards": cards})
 
 
 def prepare_messages(request):
