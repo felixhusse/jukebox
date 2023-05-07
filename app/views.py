@@ -37,8 +37,6 @@ def home(request):
 
     spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
     devices = spotify.devices()
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(devices)
     return render(
         request,
         "pages/home.html",
@@ -68,7 +66,6 @@ def stop_song(request):
     scope = "user-read-playback-state,user-modify-playback-state"
     spotify_connection = SpotifyConnection(scope=scope)
     spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
-
     spotify.pause_playback()
     messages.add_message(request, messages.SUCCESS, "Song paused")
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
@@ -115,7 +112,8 @@ def configure_antonia(request):
         if request.method == "POST":
             if form.is_valid():
                 form.save()
-                return redirect('home')
+                messages.add_message(request, messages.SUCCESS, "config saved")
+                return redirect('app:configure')
         context = {
             "form": form
         }
@@ -128,7 +126,8 @@ def configure_antonia(request):
             form = ConfigurationForm(request.POST, instance=data)
             if form.is_valid():
                 form.save()
-                return redirect ('home')
+                messages.add_message(request, messages.SUCCESS, "config saved")
+                return redirect('app:configure')
         context = {
             "form": form
         }

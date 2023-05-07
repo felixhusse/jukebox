@@ -24,18 +24,18 @@ source "$VIRTUALENV_PATH"/bin/activate
 pip install -r requirements.txt
 pip install -r requirements-pi.txt
 
+# Build Database & collect static files
+python manage.py migrate
+python manage.py collectstatic
 
-
-# Copy the template .env.example file to .env
-cp $ENVIRONMENT_FILE $WORKING_DIR/.env
 # Set values for environment variables in .env
-echo "Generating Secret Key"
+cp $ENVIRONMENT_FILE $WORKING_DIR/.env
 SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
 sed -i "s/SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/g" $WORKING_DIR/.env
 
-sudo cp $APP_NAME.service $SERVICE_FILE
-
+# Generate Service
 echo "Generating Service File"
+sudo cp $APP_NAME.service $SERVICE_FILE
 sudo sed -i "s@Description=.*@Description=Gunicorn instance serving $APP_NAME@g" $SERVICE_FILE
 sudo sed -i "s@User=.*@User=$USER@g" $SERVICE_FILE
 sudo sed -i "s@WorkingDirectory=.*@WorkingDirectory=$WORKING_DIR@g" $SERVICE_FILE
@@ -44,19 +44,14 @@ sudo sed -i "s@ExecStart=.*@ExecStart=$VIRTUALENV_PATH/bin/gunicorn --access-log
 echo "Copy Socket"
 sudo cp "jukebox.socket" "/etc/systemd/system/jukebox.socket"
 
+# Reload the Systemd configuration
 sudo systemctl daemon-reload
 
-python manage.py migrate
-python manage.py collectstatic
-
-
-
-# Reload the Systemd configuration
-
-
 # Start the new service and enable it to start at boot
-sudo systemctl start $APP_NAME
 sudo systemctl enable jukebox.socket
-# sudo systemctl enable $APP_NAME
+sudo systemctl enable $APP_NAME
+
+sudo systemctl start $APP_NAME
+sudo systemctl start jukebox.socket
 
 echo "The $APP_NAME service has been installed and started."

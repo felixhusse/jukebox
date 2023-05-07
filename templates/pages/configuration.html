@@ -18,7 +18,11 @@
             {{form.spotify_callback_url}}
             {{form.spotify_callback_url.errors}}
         </div>
-        <input type="submit" class="btn btn-outline-success" >
+        <div class="form-group mb-3">
+            {{form.spotify_speaker_id}}
+            {{form.spotify_speaker_id.errors}}
+        </div>
+        <input type="submit" class="btn btn-primary" >
 
     </form>
     </div>

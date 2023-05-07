@@ -39,6 +39,9 @@ class SpotifyPlayer:
         self.spotify_connection = spotiy_connection
         self.spotipy_spotify = spotipy.Spotify(auth_manager=self.spotify_connection.get_auth_manager())
 
+    def find_devices(self):
+        return self.spotipy_spotify.devices()
+
     def play_song(self, spotify_uid):
         track_uris = []
         if "album" in spotify_uid:

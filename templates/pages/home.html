@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <h1>Antonia - Toniebox clone</h1>
 
+    <div class="container text-center">
+    <h1>Antonia - Toniebox clone</h1>
+      <div class="row g-2">
+        <div class="col-6">
+          <div class="p-3">
             {% if auth_url %}
                 <a type="button" class="btn btn-primary" id="sign_in" href="{{ auth_url }}">Sign in</a>
             {% else %}
@@ -17,33 +19,30 @@
                     </div>
 
                 {% endfor %}
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="play_song">Play</button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="stop_song">Stop</button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="start_thread">Start Thread</button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="stop_thread">Stop Thread</button>
-                </div>
-
-
             {% endif %}
-
+          </div>
         </div>
-        <div class="row justify-content-center">
-            <div class="form-group">
-                <label for="spotify_uid">Spotify UID</label>
-                <input type="text" class="form-control" id="spotify_uid"  placeholder="Enter spotify uid">
-            </div>
-            <button type="button" class="btn btn-primary" id="train_card">Train card</button>
+        <div class="col-6">
+          <div class="p-3">
+              {% if not auth_url %}
+                  <button type="button" class="btn btn-primary" id="play_song">Play</button>
+                  <button type="button" class="btn btn-primary" id="stop_song">Stop</button>
+                  <button type="button" class="btn btn-primary" id="start_thread">Start Thread</button>
+                  <button type="button" class="btn btn-primary" id="stop_thread">Stop Thread</button>
+              {% endif %}
+          </div>
         </div>
-
+        <div class="col-6">
+          <div class="p-3">
+              <input type="text" class="form-control" id="spotify_uid"  placeholder="Enter spotify uid">
+              <button type="button" class="btn btn-primary" id="train_card">Train card</button>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-3">Custom column padding</div>
+        </div>
+      </div>
     </div>
-
 {% endblock %}
 
 {% block inline_javascript %}

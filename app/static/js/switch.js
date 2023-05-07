@@ -68,7 +68,7 @@
     if (lightSwitch.checked) {
       lightSwitch.checked = false;
     }
-    localStorage.setItem('lightSwitch', 'light');
+    localStorage.setItem('lightSwitch', 'dark');
   }
 
   /**
