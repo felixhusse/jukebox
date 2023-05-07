@@ -133,10 +133,29 @@ def configure_antonia(request):
         }
         return render(request, 'pages/configuration.html', context)
 
-def manage_cards(request):
-    cards = MusicCard.objects.all()
 
-    return render(request, 'pages/cards.html', {"cards": cards})
+def cards(request):
+    mcards = MusicCard.objects.all()
+
+    return render(request, 'pages/cards.html', {"cards": mcards})
+
+
+def add_card(request):
+    try:
+        rfid_reader = RFIDCardReader()
+        if request.GET.get('spotify_uid'):
+            spotify_uid = request.GET.get('spotify_uid')
+            spotify_type = request.GET.get('spotify_type')
+
+            rfid_reader.train_card(spotify_uid=spotify_uid)
+            messages.add_message(request, messages.SUCCESS, "Card succesfully trained")
+    except NameError:
+        messages.add_message(request, messages.ERROR, "Named exception")
+    return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
+
+
+def delete_card(request):
+    return JsonResponse({"result": "Done"})
 
 
 def prepare_messages(request):

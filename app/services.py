@@ -87,19 +87,30 @@ class RFIDCardReader:
     def __init__(self):
         self.reader = SimpleMFRC522()
 
-    def train_card(self, spotify_uid):
+    def train_card(self, spotify_uid, spotify_type):
         try:
             id, text = self.reader.read()
             print("Card read")
+            scope = "user-read-playback-state,user-modify-playback-state"
+            spotify_details = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope)).load_detail(spotify_uid=spotify_uid, card_type=spotify_type)
+
             cards = MusicCard.objects.filter(card_uid=id)
             if cards:
                 card = cards.first()
                 card.spotify_uid = spotify_uid
+                card.music_type = spotify_type
+                card.spotify_cover_url = spotify_details["image_url"],
+                card.spotify_track_num = spotify_details["num_of_tracks"],
+                card.spotify_name = spotify_details['name'],
                 card.save()
             else:
                 card = MusicCard(
                     card_uid=id,
-                    spotify_uid=spotify_uid
+                    spotify_uid=spotify_uid,
+                    spotify_type=spotify_type,
+                    spotify_cover_url=spotify_details["image_url"],
+                    spotify_track_num=spotify_details["num_of_tracks"],
+                    spotify_name=spotify_details['name'],
                 )
                 card.save()
         finally:
