@@ -1,29 +1,12 @@
 {% extends "base.html" %}
-
+{% load crispy_forms_tags %}
 {% block content %}
-    <div class="container">
-    <form method="POST" action="">
-        <!-- for csrf token -->
-        {% csrf_token %}
-        <div class="form-group mb-3">
-            <!-- double curly braces is used to display data from the database -->
-            {{form.spotify_client_id}}
-            {{form.spotify_client_id.errors}}
-        </div>
-        <div class="form-group mb-3">
-            {{form.spotify_client_secret}}
-            {{form.spotify_client_secret.errors}}
-        </div>
-        <div class="form-group mb-3">
-            {{form.spotify_callback_url}}
-            {{form.spotify_callback_url.errors}}
-        </div>
-        <div class="form-group mb-3">
-            {{form.spotify_speaker_id}}
-            {{form.spotify_speaker_id.errors}}
-        </div>
-        <input type="submit" class="btn btn-primary" >
 
-    </form>
-    </div>
+        <form method="POST" action="" class="p-4">
+            <!-- for csrf token -->
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type="submit" class="btn btn-primary" >
+        </form>
+
 {% endblock %}
