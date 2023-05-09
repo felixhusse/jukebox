@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="align-center col-10 offset-1">
+        <div class="d-flex justify-content-between align-items-center">
+            <p class="lead ml-0">Cards</p>
+            <form hx-post="{% url 'app:create-card' %}" hx-target='#card-list' class="d-flex align-items-center" method="POST">
+                {% csrf_token %}
+                <input type="text" name="spotify_uid" class="form-control-sm mr-2" placeholder="Enter uid" />
+                <select name="spotify_type" class="form-control-sm mr-2" placeholder="Enter type" >
+                  <option value="AL">Album</option>
+                  <option value="TR">Track</option>
+                  <option value="PL">Playlist</option>
+                </select>
+                <button hx-post='{% url "app:create-card"%}' hx-target='#card-list' type="submit" class="btn btn-success btn-sm">
+                    <span>Save</span>
+                    <svg class="htmx-indicator ml-2 animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="black" fill="transparent" stroke-width="4"></circle>
+                      <path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        <hr/>
+
+        <div id="card-list">
+            {% include 'pages/card-list.html' %}
+        </div>
+    </div>
+{% endblock content %}
+
+{% block inline_javascript %}
+
+{% endblock inline_javascript %}

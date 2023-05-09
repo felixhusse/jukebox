@@ -9,13 +9,18 @@ class SimpleMFRC522:
     def __init__(self):
         self.READER = MFRC522()
 
+    def read(self):
+        time.sleep(5)
+        return random.randint(1, 10), "random"
+
     def read_id_no_block(self):
         time.sleep(0.5)
         return random.choice(self.id_list)
 
 class GPIO:
 
-    def cleanup(self):
+    @staticmethod
+    def cleanup():
         print("Clean UP")
 
 class MFRC522:

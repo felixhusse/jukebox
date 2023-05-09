@@ -3,26 +3,62 @@ import sys
 import spotipy.cache_handler
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.exceptions import SpotifyException
+
 try:
     import RPi.GPIO as GPIO
     from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
 except ImportError:
     from app.mockups import SimpleMFRC522, GPIO
 
-from .models import Configuration, MusicCard, CardChoices
+from .models import Configuration, MusicCard
+
+
+class AntoniaService:
+
+    @staticmethod
+    def train_card(card_uid, spotify_uid, spotify_type, spotify_details):
+        logger = logging.getLogger(__name__)
+        cards = MusicCard.objects.filter(card_uid=card_uid)
+        if cards:
+            card = cards.first()
+            card.spotify_uid = spotify_uid
+            card.spotify_music_type = spotify_type
+            card.spotify_cover_url = spotify_details["image_url"],
+            card.spotify_track_num = spotify_details["num_of_tracks"],
+            card.spotify_name = spotify_details['name'],
+            card.save()
+        else:
+            logger.debug("Creating new Card")
+            logger.debug(spotify_type)
+            card = MusicCard(
+                card_uid=card_uid,
+                spotify_uid=spotify_uid,
+                spotify_music_type=spotify_type,
+                spotify_cover_url=spotify_details["image_url"],
+                spotify_track_num=spotify_details["num_of_tracks"],
+                spotify_name=spotify_details['name'],
+            )
+            card.save()
+    @staticmethod
+    def delete_card(card_uid):
+        cards = MusicCard.objects.filter(card_uid=card_uid)
+        if cards:
+            card = cards.first()
+            card.delete()
 
 class SpotifyConnection:
     logger = logging.getLogger(__name__)
+
     def __init__(self, scope="user-read-playback-state,user-modify-playback-state"):
         if Configuration.objects.all().count() == 1:
             configuration = Configuration.objects.first()
             self.cache_handler = spotipy.cache_handler.CacheFileHandler()
             self.auth_manager = SpotifyOAuth(scope=scope,
-                                            client_id=configuration.spotify_client_id,
-                                            client_secret=configuration.spotify_client_secret,
-                                            redirect_uri=configuration.spotify_callback_url,
-                                            show_dialog=True,
-                                            cache_handler=self.cache_handler)
+                                             client_id=configuration.spotify_client_id,
+                                             client_secret=configuration.spotify_client_secret,
+                                             redirect_uri=configuration.spotify_callback_url,
+                                             show_dialog=True,
+                                             cache_handler=self.cache_handler)
             self.is_configured = True
         else:
             self.is_configured = False
@@ -43,24 +79,22 @@ class SpotifyPlayer:
         result = {}
         spotify_result = None
 
-        if CardChoices.TR == card_type:
-            spotify_track = self.spotipy_spotify.track(spotify_uid)
-            result['name'] = spotify_track['name']
+        if MusicCard.Type.TRACK == card_type:
+            spotify_result = self.spotipy_spotify.track(spotify_uid)
             result['num_of_tracks'] = 1
-            for image in spotify_track['album']['images']:
-                if image["height"] == 300:
-                    result['image_url'] = image['url']
-                    break
-            return result
-        elif CardChoices.AL == card_type:
+            images = spotify_result['album']['images']
+        elif MusicCard.Type.ALBUM == card_type:
             spotify_result = self.spotipy_spotify.album(spotify_uid)
             result['num_of_tracks'] = spotify_result['total_tracks']
-        elif CardChoices.PL == card_type:
+            images = spotify_result['images']
+        elif MusicCard.Type.PLAYLIST == card_type:
             spotify_result = self.spotipy_spotify.playlist(spotify_uid)
             result['num_of_tracks'] = spotify_result['tracks']['total']
+            images = spotify_result['images']
 
         result['name'] = spotify_result['name']
-        for image in spotify_result['images']:
+        for image in images:
+            result['image_url'] = image['url']
             if image["height"] == 300:
                 result['image_url'] = image['url']
                 break
@@ -84,36 +118,16 @@ class SpotifyPlayer:
 
 
 class RFIDCardReader:
+    logger = logging.getLogger(__name__)
+
     def __init__(self):
         self.reader = SimpleMFRC522()
 
-    def train_card(self, spotify_uid, spotify_type):
+    def read_uid(self):
         try:
             id, text = self.reader.read()
-            print("Card read")
-            scope = "user-read-playback-state,user-modify-playback-state"
-            spotify_details = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope)).load_detail(spotify_uid=spotify_uid, card_type=spotify_type)
-
-            cards = MusicCard.objects.filter(card_uid=id)
-            if cards:
-                card = cards.first()
-                card.spotify_uid = spotify_uid
-                card.music_type = spotify_type
-                card.spotify_cover_url = spotify_details["image_url"],
-                card.spotify_track_num = spotify_details["num_of_tracks"],
-                card.spotify_name = spotify_details['name'],
-                card.save()
-            else:
-                card = MusicCard(
-                    card_uid=id,
-                    spotify_uid=spotify_uid,
-                    spotify_type=spotify_type,
-                    spotify_cover_url=spotify_details["image_url"],
-                    spotify_track_num=spotify_details["num_of_tracks"],
-                    spotify_name=spotify_details['name'],
-                )
-                card.save()
+            self.logger.debug("Read Card")
         finally:
             self.reader.READER.Close_MFRC522()
             GPIO.cleanup()
-
+        return id

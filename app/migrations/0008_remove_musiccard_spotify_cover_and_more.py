@@ -20,9 +20,4 @@ class Migration(migrations.Migration):
             name='spotify_cover_url',
             field=models.CharField(blank=True, default='', max_length=200),
         ),
-        migrations.AlterField(
-            model_name='musiccard',
-            name='music_type',
-            field=models.CharField(choices=[(app.models.CardChoices['AL'], 'Album'), (app.models.CardChoices['PL'], 'Playlist'), (app.models.CardChoices['TR'], 'Track')], default='TR', max_length=2),
-        ),
     ]

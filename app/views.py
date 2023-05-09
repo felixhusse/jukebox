@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
+from django.views.generic.list import ListView
 import pprint
 import spotipy
 import threading
 from spotipy.oauth2 import SpotifyOAuth
 from .models import Configuration, MusicCard
 from .forms import ConfigurationForm
-from .services import SpotifyConnection, RFIDCardReader
+from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService
 from .threads import RFIDReaderThread
 
 
@@ -134,28 +135,35 @@ def configure_antonia(request):
         return render(request, 'pages/configuration.html', context)
 
 
-def cards(request):
-    mcards = MusicCard.objects.all()
+def create_card(request):
+    spotify_uid = request.POST.get('spotify_uid')
+    spotify_type = request.POST.get('spotify_type')
+    music_type = MusicCard.Type(spotify_type)
+    rfid_reader = RFIDCardReader()
+    card_uid = rfid_reader.read_uid()
+    scope = "user-read-playback-state,user-modify-playback-state"
+    spotify_details = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope)).load_detail(
+        spotify_uid=spotify_uid, card_type=music_type)
+    AntoniaService.train_card(card_uid=card_uid, spotify_uid=spotify_uid, spotify_type=music_type,
+                              spotify_details=spotify_details)
+    messages.add_message(request, messages.SUCCESS, "Card succesfully trained")
+    cards = MusicCard.objects.all()
+    return render(request, 'pages/card-list.html', {"cards": cards})
 
-    return render(request, 'pages/cards.html', {"cards": mcards})
+def delete_card(request, pk):
+    # remove the contact from list.
+    card_id = MusicCard.objects.get(id=pk)
+    card_id.delete()
+    cards = MusicCard.objects.all()
+    return render(request, 'pages/card-list.html', {'cards': cards})
+
+class CardList(ListView):
+    template_name = "pages/card.html"
+    model = MusicCard
+    context_object_name = 'cards'
 
 
-def add_card(request):
-    try:
-        rfid_reader = RFIDCardReader()
-        if request.GET.get('spotify_uid'):
-            spotify_uid = request.GET.get('spotify_uid')
-            spotify_type = request.GET.get('spotify_type')
 
-            rfid_reader.train_card(spotify_uid=spotify_uid)
-            messages.add_message(request, messages.SUCCESS, "Card succesfully trained")
-    except NameError:
-        messages.add_message(request, messages.ERROR, "Named exception")
-    return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
-
-
-def delete_card(request):
-    return JsonResponse({"result": "Done"})
 
 
 def prepare_messages(request):

@@ -1,7 +1,7 @@
 import pprint
 
 from django import forms
-from .models import Configuration
+from .models import Configuration, MusicCard
 from .services import SpotifyConnection, SpotifyPlayer
 def retrieve_devices():
     scope = "user-read-playback-state,user-modify-playback-state"
@@ -12,6 +12,22 @@ def retrieve_devices():
         device_list.append((device["id"], device["name"]))
 
     return device_list
+
+class CardForm(forms.ModelForm):
+    spotify_uid = forms.CharField(widget=forms.TextInput(attrs={
+        "class": "form-control",
+        "placeholder": "Spotify UID"
+    }))
+
+    spotify_music_type = forms.ChoiceField(choices=MusicCard.Type, widget=forms.Select(attrs={
+        "class": "form-control",
+        "placeholder": "Music Type"
+    }))
+
+    class Meta:
+        fields = ["spotify_uid", "spotify_music_type"]
+        model = MusicCard
+
 
 class ConfigurationForm(forms.ModelForm):
 
