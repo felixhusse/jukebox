@@ -4,8 +4,14 @@ from django import forms
 from .models import Configuration, MusicCard
 from .services import SpotifyConnection, SpotifyPlayer
 def retrieve_devices():
+
     scope = "user-read-playback-state,user-modify-playback-state"
-    spotify_player = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope))
+    spotify_connection = SpotifyConnection(scope=scope)
+
+    if spotify_connection.is_configured == False:
+        return []
+
+    spotify_player = SpotifyPlayer(spotiy_connection=spotify_connection)
     devices = spotify_player.find_devices()["devices"]
     device_list = []
     for device in devices:
