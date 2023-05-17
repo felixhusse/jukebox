@@ -147,5 +147,5 @@ class PushButtonService:
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_forward)
-        GPIO.add_event_detect(12, GPIO.RISING, callback=self.button_backward)
+        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_forward, bouncetime=500)
+        GPIO.add_event_detect(12, GPIO.RISING, callback=self.button_backward, bouncetime=500)
