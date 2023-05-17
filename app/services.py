@@ -8,7 +8,8 @@ try:
     import RPi.GPIO as GPIO
     from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
 except ImportError:
-    from app.mockups import SimpleMFRC522, GPIO
+    from app.mockups import SimpleMFRC522
+    from Mock.GPIO import GPIO
 
 from .models import Configuration, MusicCard
 
@@ -131,3 +132,20 @@ class RFIDCardReader:
             self.reader.READER.Close_MFRC522()
             GPIO.cleanup()
         return id
+
+
+class PushButtonService:
+    logger = logging.getLogger(__name__)
+
+    def button_forward(self, channel):
+        self.logger.debug("Forward Button was pushed!")
+
+    def button_backward(self, channel):
+        self.logger.debug("Backward Button was pushed!")
+
+    def __init__(self):
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_forward)
+        GPIO.add_event_detect(12, GPIO.RISING, callback=self.button_backward)
