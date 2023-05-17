@@ -9,7 +9,7 @@ try:
     from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
 except ImportError:
     from app.mockups import SimpleMFRC522
-    from Mock.GPIO import GPIO
+    from Mock import GPIO
 
 from .models import Configuration, MusicCard
 

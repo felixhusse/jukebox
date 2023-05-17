@@ -9,7 +9,8 @@ try:
     import RPi.GPIO as GPIO
     from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
 except ImportError:
-    from .mockups import SimpleMFRC522, GPIO
+    from .mockups import SimpleMFRC522
+    from Mock import GPIO
 
 class RFIDReaderThread(Thread):
     logger = logging.getLogger(__name__)
