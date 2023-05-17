@@ -9,7 +9,7 @@ def retrieve_devices():
     spotify_connection = SpotifyConnection(scope=scope)
 
     if spotify_connection.is_configured == False:
-        return []
+        return [("default","default")]
 
     spotify_player = SpotifyPlayer(spotiy_connection=spotify_connection)
     devices = spotify_player.find_devices()["devices"]
