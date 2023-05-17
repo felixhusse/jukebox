@@ -24,8 +24,11 @@
         <div class="col-6">
           <div class="p-3">
               {% if not auth_url %}
-                  <button type="button" class="btn btn-primary" id="play_song">Play</button>
-                  <button type="button" class="btn btn-primary" id="stop_song">Stop</button>
+
+                  <form method="post" action="{% url 'app:sign_out' %}">
+                  {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">sign out</button>
+                  </form>
                   <button type="button" class="btn btn-primary" id="start_thread">Start Thread</button>
                   <button type="button" class="btn btn-primary" id="stop_thread">Stop Thread</button>
               {% endif %}

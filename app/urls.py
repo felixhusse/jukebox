@@ -10,6 +10,7 @@ from app.views import (
     create_card,
     delete_card,
     CardList,
+    sign_out,
 
 )
 
@@ -17,6 +18,7 @@ app_name = "app"
 
 urlpatterns = [
     path("", view=home, name="home"),
+    path("app/signout", view=sign_out, name="sign_out"),
     path("app/play", view=play_song, name="play_song"),
     path("app/stop", view=stop_song, name="stop_song"),
 

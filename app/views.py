@@ -12,7 +12,6 @@ from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaS
 from .threads import RFIDReaderThread
 
 
-
 def home(request):
     scope = "user-read-playback-state,user-modify-playback-state"
     spotify_connection = SpotifyConnection(scope=scope)
@@ -26,28 +25,31 @@ def home(request):
         )
 
     if request.GET.get('code'):
-        spotify_connection.get_auth_manager().get_access_token(request.GET.get('code'))
+        spotify_connection.auth_manager.get_access_token(request.GET.get('code'))
         return redirect("app:home")
 
-    if not spotify_connection.get_auth_manager().validate_token(spotify_connection.get_auth_manager().get_cached_token()):
-        auth_url = spotify_connection.get_auth_manager().get_authorize_url()
+    if not spotify_connection.auth_manager.validate_token(spotify_connection.cache_handler.get_cached_token()):
+        auth_url = spotify_connection.auth_manager.get_authorize_url()
         return render(
             request,
             "pages/home.html",
             {"auth_url": auth_url}, )
 
-    spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
+    spotify = spotipy.Spotify(auth_manager=spotify_connection.auth_manager)
     devices = spotify.devices()
     return render(
         request,
         "pages/home.html",
         {"data": devices},)
 
+def sign_out(request):
+    SpotifyConnection.clear_cache()
+    return redirect("app:home")
 
 def play_song(request):
     scope = "user-read-playback-state,user-modify-playback-state"
     spotify_connection = SpotifyConnection(scope=scope)
-    spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
+    spotify = spotipy.Spotify(auth_manager=spotify_connection.auth_manager)
 
     urn = 'spotify:album:1cOFQWQW6BHrLbSiuQfsdO'
     album = spotify.album(urn)
@@ -66,7 +68,7 @@ def play_song(request):
 def stop_song(request):
     scope = "user-read-playback-state,user-modify-playback-state"
     spotify_connection = SpotifyConnection(scope=scope)
-    spotify = spotipy.Spotify(auth_manager=spotify_connection.get_auth_manager())
+    spotify = spotipy.Spotify(auth_manager=spotify_connection.auth_manager)
     spotify.pause_playback()
     messages.add_message(request, messages.SUCCESS, "Song paused")
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})

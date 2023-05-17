@@ -1,5 +1,5 @@
 import logging
-import sys
+import sys, os
 import spotipy.cache_handler
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.exceptions import SpotifyException
@@ -64,8 +64,10 @@ class SpotifyConnection:
         else:
             self.is_configured = False
 
-    def get_auth_manager(self):
-        return self.auth_manager
+    @staticmethod
+    def clear_cache():
+        cache_file = '.cache'
+        os.remove(cache_file)
 
 
 class SpotifyPlayer:
@@ -74,7 +76,7 @@ class SpotifyPlayer:
 
     def __init__(self, spotiy_connection):
         self.spotify_connection = spotiy_connection
-        self.spotipy_spotify = spotipy.Spotify(auth_manager=self.spotify_connection.get_auth_manager())
+        self.spotipy_spotify = spotipy.Spotify(auth_manager=self.spotify_connection.auth_manager)
 
     def load_detail(self, spotify_uid, card_type):
         result = {}
