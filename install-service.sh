@@ -46,7 +46,6 @@ sudo cp "jukebox.socket" "/etc/systemd/system/jukebox.socket"
 
 # Reload the Systemd configuration
 sudo systemctl daemon-reload
-
 # Start the new service and enable it to start at boot
 sudo systemctl enable jukebox.socket
 sudo systemctl enable $APP_NAME

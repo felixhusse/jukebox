@@ -8,7 +8,7 @@ import threading
 from spotipy.oauth2 import SpotifyOAuth
 from .models import Configuration, MusicCard
 from .forms import ConfigurationForm
-from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService
+from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService,PushButtonService
 from .threads import RFIDReaderThread
 
 
@@ -105,7 +105,6 @@ def start_thread(request):
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
 
 
-
 def configure_antonia(request):
     if Configuration.objects.all().count() == 0:
         form = ConfigurationForm(request.POST or None)
@@ -161,9 +160,6 @@ class CardList(ListView):
     template_name = "pages/card.html"
     model = MusicCard
     context_object_name = 'cards'
-
-
-
 
 
 def prepare_messages(request):

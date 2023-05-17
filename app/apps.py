@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import threading
+
 try:
     import RPi.GPIO as GPIO
 except ImportError:
@@ -18,16 +19,20 @@ class AppConfig(AppConfig):
             if os.environ.get('DEV') and os.environ.get('RUN_MAIN'):
                 self.logger.info("Fire up RFID Reader Thread for DEV Env")
                 from app.threads import RFIDReaderThread
+                from app.services import PushButtonService
                 event = threading.Event()
                 thread = RFIDReaderThread(event)
                 thread.start()
+                pushbutton_service = PushButtonService()
                 self.logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
             else:
                 self.logger.info("Fire up RFID Reader Thread for Prod Env")
                 from app.threads import RFIDReaderThread
+                from app.services import PushButtonService
                 event = threading.Event()
                 thread = RFIDReaderThread(event)
                 thread.start()
+                pushbutton_service = PushButtonService()
                 self.logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
 
 
