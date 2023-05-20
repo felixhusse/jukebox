@@ -1,19 +1,14 @@
-
-
-
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.generic.list import ListView
-import pprint
 import logging
 import spotipy
 import threading
 import os
-from spotipy.oauth2 import SpotifyOAuth
 from .models import Configuration, MusicCard
 from .forms import ConfigurationForm
-from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService, PushButtonService
+from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService
 from .threads import RFIDReaderThread
 
 logger = logging.getLogger(__name__)
@@ -48,6 +43,7 @@ def sign_in(request):
     messages.add_message(request, messages.SUCCESS, "Logging in")
     return redirect(auth_url)
 
+
 def sign_out(request):
     logger.debug("Sign out")
     cache_file = '.cache'
@@ -55,37 +51,6 @@ def sign_out(request):
     messages.add_message(request, messages.SUCCESS, "Logged out")
     return redirect("app:configure")
 
-def shutdown(request):
-    AntoniaService.shutdown()
-    messages.add_message(request, messages.SUCCESS, "Shutdown")
-    return redirect("app:configure")
-
-def play_song(request):
-    scope = "user-read-playback-state,user-modify-playback-state"
-    spotify_connection = SpotifyConnection(scope=scope)
-    spotify = spotipy.Spotify(auth_manager=spotify_connection.auth_manager)
-
-    urn = 'spotify:album:1cOFQWQW6BHrLbSiuQfsdO'
-    album = spotify.album(urn)
-    tracks = []
-    for track in album['tracks']['items']:
-        tracks.append(track['uri'])
-
-    if request.GET.get('speaker'):
-        spotify.start_playback(uris=tracks, device_id=request.GET.get('speaker'))
-    else:
-        spotify.start_playback(uris=['spotify:track:70JdQ8artpCN4NBn7Wt1Uw'])
-    messages.add_message(request, messages.SUCCESS, "Song started")
-    return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
-
-
-def stop_song(request):
-    scope = "user-read-playback-state,user-modify-playback-state"
-    spotify_connection = SpotifyConnection(scope=scope)
-    spotify = spotipy.Spotify(auth_manager=spotify_connection.auth_manager)
-    spotify.pause_playback()
-    messages.add_message(request, messages.SUCCESS, "Song paused")
-    return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
 
 def stop_thread(request):
     threads = threading.enumerate()
@@ -95,6 +60,7 @@ def stop_thread(request):
             messages.add_message(request, messages.SUCCESS, "Thread stopped")
 
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
+
 
 def start_thread(request):
     threads = threading.enumerate()
