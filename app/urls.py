@@ -11,6 +11,8 @@ from app.views import (
     delete_card,
     CardList,
     sign_out,
+    shutdown,
+    sign_in,
 
 )
 
@@ -19,6 +21,8 @@ app_name = "app"
 urlpatterns = [
     path("", view=home, name="home"),
     path("app/signout", view=sign_out, name="sign_out"),
+    path("app/signin", view=sign_in, name="sign_in"),
+    path("app/shutdown", view=shutdown, name="shutdown"),
     path("app/play", view=play_song, name="play_song"),
     path("app/stop", view=stop_song, name="stop_song"),
 

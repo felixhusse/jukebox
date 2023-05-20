@@ -15,7 +15,6 @@ from .models import Configuration, MusicCard
 
 
 class AntoniaService:
-
     @staticmethod
     def train_card(card_uid, spotify_uid, spotify_type, spotify_details):
         logger = logging.getLogger(__name__)
@@ -49,23 +48,45 @@ class AntoniaService:
 
 class SpotifyConnection:
     logger = logging.getLogger(__name__)
+    logged_in = False
 
     def __init__(self, scope="user-read-playback-state,user-modify-playback-state"):
+        self.scope = scope
+        self.cache_handler = spotipy.cache_handler.CacheFileHandler()
         if Configuration.objects.all().count() == 1:
             configuration = Configuration.objects.first()
-            self.cache_handler = spotipy.cache_handler.CacheFileHandler()
-            self.auth_manager = SpotifyOAuth(scope=scope,
+            self.is_configured = True
+            self.auth_manager = SpotifyOAuth(scope=self.scope,
                                              client_id=configuration.spotify_client_id,
                                              client_secret=configuration.spotify_client_secret,
                                              redirect_uri=configuration.spotify_callback_url,
                                              show_dialog=True,
                                              cache_handler=self.cache_handler)
-            self.is_configured = True
+            if self.auth_manager.validate_token(self.cache_handler.get_cached_token()):
+                self.logged_in = True
+            else:
+                self.logged_in = False
+
         else:
             self.is_configured = False
 
-    @staticmethod
-    def clear_cache():
+    def login(self):
+        configuration = Configuration.objects.first()
+        self.auth_manager = SpotifyOAuth(scope=self.scope,
+                                         client_id=configuration.spotify_client_id,
+                                         client_secret=configuration.spotify_client_secret,
+                                         redirect_uri=configuration.spotify_callback_url,
+                                         show_dialog=True,
+                                         cache_handler=self.cache_handler)
+        auth_url = self.auth_manager.get_authorize_url()
+        self.logged_in = True
+        return auth_url
+
+    def set_auth_token(self, code):
+        self.auth_manager.get_access_token(code)
+        self.logged_in = True
+
+    def clear_cache(self):
         cache_file = '.cache'
         os.remove(cache_file)
 

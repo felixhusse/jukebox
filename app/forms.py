@@ -3,13 +3,14 @@ import pprint
 from django import forms
 from .models import Configuration, MusicCard
 from .services import SpotifyConnection, SpotifyPlayer
-def retrieve_devices():
 
+
+def retrieve_devices():
     scope = "user-read-playback-state,user-modify-playback-state"
     spotify_connection = SpotifyConnection(scope=scope)
 
-    if spotify_connection.is_configured == False:
-        return [("default","default")]
+    if not spotify_connection.is_configured:
+        return [("default", "default")]
 
     spotify_player = SpotifyPlayer(spotiy_connection=spotify_connection)
     devices = spotify_player.find_devices()["devices"]
@@ -18,6 +19,7 @@ def retrieve_devices():
         device_list.append((device["id"], device["name"]))
 
     return device_list
+
 
 class CardForm(forms.ModelForm):
     spotify_uid = forms.CharField(widget=forms.TextInput(attrs={
@@ -51,13 +53,8 @@ class ConfigurationForm(forms.ModelForm):
         "placeholder": "callback url"
     }))
 
-    spotify_speaker_id = forms.ChoiceField(choices=retrieve_devices, widget=forms.Select(attrs={
-        "class": "form-control",
-        "placeholder": "speaker id"
-    }))
-
     class Meta:
         model = Configuration
         fields = [
-            'spotify_client_id', 'spotify_client_secret', 'spotify_callback_url','spotify_speaker_id',
+            'spotify_client_id', 'spotify_client_secret', 'spotify_callback_url',
         ]

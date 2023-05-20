@@ -1,14 +1,33 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
+        <div class="row">
+            <div class="col-sm-8">
+                <form method="POST" action="" class="p-4">
+                    <!-- for csrf token -->
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="d-grid gap-2">
+                      <button type="submit" class="btn btn-primary" type="button">save</button>
+                    </div>
+                </form>
+            </div>
 
-        <form method="POST" action="" class="p-4">
-            <!-- for csrf token -->
-            {% csrf_token %}
-            {{ form|crispy }}
-            <button type="submit" class="btn btn-primary">
-                <span>Send</span>
-            </button>
-        </form>
+            <div class="col-sm-4">
+
+                {% if logged_in %}
+                    <form method="post" action="{% url 'app:sign_out' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">sign out</button>
+                    </form>
+                {% else %}
+                    <form method="post" action="{% url 'app:sign_in' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">sign in</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
 
 {% endblock %}

@@ -1,16 +1,22 @@
+
+
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.generic.list import ListView
 import pprint
+import logging
 import spotipy
 import threading
+import os
 from spotipy.oauth2 import SpotifyOAuth
 from .models import Configuration, MusicCard
 from .forms import ConfigurationForm
-from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService,PushButtonService
+from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService, PushButtonService
 from .threads import RFIDReaderThread
 
+logger = logging.getLogger(__name__)
 
 def home(request):
     scope = "user-read-playback-state,user-modify-playback-state"
@@ -18,33 +24,41 @@ def home(request):
 
     if not spotify_connection.is_configured:
         messages.add_message(request, messages.WARNING, "Please configure system!")
-        return render(
-            request,
-            "pages/home.html",
-            {}
-        )
+        return redirect("app:configure")
 
     if request.GET.get('code'):
-        spotify_connection.auth_manager.get_access_token(request.GET.get('code'))
+        logger.debug("Code: %s", request.GET.get('code'))
+        spotify_connection.set_auth_token(request.GET.get('code'))
         return redirect("app:home")
 
-    if not spotify_connection.auth_manager.validate_token(spotify_connection.cache_handler.get_cached_token()):
-        auth_url = spotify_connection.auth_manager.get_authorize_url()
-        return render(
-            request,
-            "pages/home.html",
-            {"auth_url": auth_url}, )
+    if not spotify_connection.logged_in:
+        return redirect("app:configure")
 
     spotify = spotipy.Spotify(auth_manager=spotify_connection.auth_manager)
     devices = spotify.devices()
     return render(
         request,
         "pages/home.html",
-        {"data": devices},)
+        {"data": devices}, )
+
+
+def sign_in(request):
+    spotify_connection = SpotifyConnection()
+    auth_url = spotify_connection.login()
+    messages.add_message(request, messages.SUCCESS, "Logging in")
+    return redirect(auth_url)
 
 def sign_out(request):
-    SpotifyConnection.clear_cache()
-    return redirect("app:home")
+    logger.debug("Sign out")
+    cache_file = '.cache'
+    os.remove(cache_file)
+    messages.add_message(request, messages.SUCCESS, "Logged out")
+    return redirect("app:configure")
+
+def shutdown(request):
+    AntoniaService.shutdown()
+    messages.add_message(request, messages.SUCCESS, "Shutdown")
+    return redirect("app:configure")
 
 def play_song(request):
     scope = "user-read-playback-state,user-modify-playback-state"
@@ -73,17 +87,6 @@ def stop_song(request):
     messages.add_message(request, messages.SUCCESS, "Song paused")
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
 
-def train_card(request):
-    try:
-        rfid_reader = RFIDCardReader()
-        if request.GET.get('spotify_uid'):
-            spotify_uid = request.GET.get('spotify_uid')
-            rfid_reader.train_card(spotify_uid=spotify_uid)
-            messages.add_message(request, messages.SUCCESS, "Card succesfully trained")
-    except NameError:
-        messages.add_message(request, messages.ERROR, "Named exception")
-    return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
-
 def stop_thread(request):
     threads = threading.enumerate()
     for thread in threads:
@@ -108,6 +111,8 @@ def start_thread(request):
 
 
 def configure_antonia(request):
+    spotify_connection = SpotifyConnection()
+
     if Configuration.objects.all().count() == 0:
         form = ConfigurationForm(request.POST or None)
 
@@ -117,7 +122,8 @@ def configure_antonia(request):
                 messages.add_message(request, messages.SUCCESS, "config saved")
                 return redirect('app:configure')
         context = {
-            "form": form
+            "form": form,
+            "logged_in": spotify_connection.logged_in,
         }
         return render(request, 'pages/configuration.html', context)
     else:
@@ -131,7 +137,8 @@ def configure_antonia(request):
                 messages.add_message(request, messages.SUCCESS, "config saved")
                 return redirect('app:configure')
         context = {
-            "form": form
+            "form": form,
+            "logged_in": spotify_connection.logged_in,
         }
         return render(request, 'pages/configuration.html', context)
 
