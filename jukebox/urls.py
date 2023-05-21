@@ -14,6 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import logging
+import threading
+from app.threads import RFIDReaderThread
+from app.services import PushButtonService
 from django.contrib import admin
 from django.urls import path, include
 
@@ -21,3 +25,11 @@ urlpatterns = [
     path("", include("app.urls", namespace="app")),
     path('admin/', admin.site.urls),
 ]
+
+logger = logging.getLogger(__name__)
+logger.info("Fire up RFID Reader Thread")
+event = threading.Event()
+thread = RFIDReaderThread(event)
+thread.start()
+pushbutton_service = PushButtonService()
+logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
