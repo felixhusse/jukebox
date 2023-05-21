@@ -7,7 +7,7 @@ After=network.target
 User=someuser
 Group=pi
 WorkingDirectory=/path/to/myproject
-ExecStart=/path/to/virtualenv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/path/to/myproject/myproject.sock myproject.wsgi:application
+ExecStart=/path/to/virtualenv/bin/gunicorn --access-logfile - --workers 3 --preload --bind unix:/path/to/myproject/myproject.sock myproject.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

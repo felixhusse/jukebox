@@ -25,7 +25,7 @@ class AppConfig(AppConfig):
                 thread.start()
                 pushbutton_service = PushButtonService()
                 self.logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
-            else:
+            elif os.environ.get('RUN_MAIN'):
                 self.logger.info("Fire up RFID Reader Thread for Prod Env")
                 from app.threads import RFIDReaderThread
                 from app.services import PushButtonService
@@ -34,6 +34,7 @@ class AppConfig(AppConfig):
                 thread.start()
                 pushbutton_service = PushButtonService()
                 self.logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
+
 
 
 
