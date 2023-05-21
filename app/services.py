@@ -159,16 +159,21 @@ class RFIDCardReader:
 
 class PushButtonService:
     logger = logging.getLogger(__name__)
+    forward_counter = 0
+    backward_counter = 0
 
     def button_forward(self, channel):
-        self.logger.debug("Forward Button was pushed!")
+        self.forward_counter += 1
+        self.logger.debug("{}# Forward Button was pushed!".format(self.forward_counter))
 
     def button_backward(self, channel):
-        self.logger.debug("Backward Button was pushed!")
+        self.backward_counter += 1
+        self.logger.debug("{}# Backward Button was pushed!".format(self.backward_counter))
 
     def __init__(self):
+        GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_forward, bouncetime=500)
-        GPIO.add_event_detect(12, GPIO.RISING, callback=self.button_backward, bouncetime=500)
+        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_forward, bouncetime=1000)
+        GPIO.add_event_detect(12, GPIO.RISING, callback=self.button_backward, bouncetime=1000)
