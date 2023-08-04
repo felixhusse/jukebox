@@ -127,15 +127,22 @@ class SpotifyPlayer:
     def find_devices(self):
         return self.spotipy_spotify.devices()
 
-    def play_song(self, spotify_uid):
+    def play_song(self, spotify_uid, spotify_type):
         track_uris = []
-        if "album" in spotify_uid:
+        if "album" == spotify_type:
             album = self.spotipy_spotify.album('spotify:{}'.format(spotify_uid))
             for track in album['tracks']['items']:
                 track_uris.append(track['uri'])
         else:
-            track_uris.append('spotify:{}'.format(spotify_uid))
-        self.spotipy_spotify.start_playback(uris=track_uris)
+            track_uris.append('spotify:{0}:{1}'.format(spotify_type,spotify_uid))
+        configuration = Configuration.objects.first()
+        self.spotipy_spotify.start_playback(device_id=configuration.spotify_speaker_id,uris=track_uris)
+
+    def next_song(self):
+        self.spotipy_spotify.next_track()
+
+    def previous_song(self):
+        self.spotipy_spotify.previous_track()
 
     def stop_song(self):
         self.spotipy_spotify.pause_playback()
@@ -161,16 +168,21 @@ class PushButtonService:
     logger = logging.getLogger(__name__)
     forward_counter = 0
     backward_counter = 0
+    spotify_player = None
 
     def button_forward(self, channel):
+        self.spotify_player.next_song()
         self.forward_counter += 1
         self.logger.debug("{}# Forward Button was pushed!".format(self.forward_counter))
 
     def button_backward(self, channel):
+        self.spotify_player.previous_song()
         self.backward_counter += 1
         self.logger.debug("{}# Backward Button was pushed!".format(self.backward_counter))
 
     def __init__(self):
+        scope = "user-read-playback-state,user-modify-playback-state"
+        self.spotify_player = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope))
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)

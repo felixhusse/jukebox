@@ -32,14 +32,25 @@ class RFIDReaderThread(Thread):
         none_count = 0
         try:
             if configuration:
+                configuration.current_card_uid = ""
+                configuration = configuration.save()
+
                 while not self.event.is_set():
                     uid = self.reader.read_id_no_block()
                     try:
                         if uid and not playing_song:
-                            self.logger.debug("Card is read")
-                            musiccard = MusicCard.objects.filter(card_uid=uid)
-                            if musiccard:
-                                spotify_player.play_song(musiccard.first().spotify_uid)
+                            self.logger.debug("Card is read: {0}".format(uid))
+                            current_card = MusicCard.objects.filter(card_uid=uid).first()
+                            if current_card:
+                                configuration = Configuration.objects.first()
+                                if configuration:
+                                    configuration.current_card_uid = uid
+                                    configuration = configuration.save()
+                                else:
+                                    self.logger.debug("Configuration is null")
+                                spotify_type = current_card.get_spotify_music_type_display().lower()
+                                spotify_uid = current_card.spotify_uid
+                                spotify_player.play_song(spotify_uid,spotify_type)
                                 playing_song = True
                                 none_count = 0
                                 self.logger.info("Song started")
@@ -49,6 +60,12 @@ class RFIDReaderThread(Thread):
                             none_count = none_count + 1
                             if none_count > 1:
                                 spotify_player.stop_song()
+                                configuration = Configuration.objects.first()
+                                if configuration:
+                                    configuration.current_card_uid = ""
+                                    configuration = configuration.save()
+                                else:
+                                    self.logger.debug("Configuration is null")
                                 playing_song = False
                                 none_count = 0
                                 self.logger.info("Song stopped")
@@ -57,8 +74,7 @@ class RFIDReaderThread(Thread):
 
                     time.sleep(1.0)
         except Exception as e:
-            ex_type, ex_value, ex_traceback = sys.exc_info()
-            self.logger.error("%s : %s".format(ex_type, ex_value))
+            logging.exception("RFID Reader Thread Exception")
         finally:
             self.reader.READER.Close_MFRC522()
         print("Finished")

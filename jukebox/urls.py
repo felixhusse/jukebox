@@ -20,16 +20,18 @@ from app.threads import RFIDReaderThread
 from app.services import PushButtonService
 from django.contrib import admin
 from django.urls import path, include
+import sys
+
 
 urlpatterns = [
     path("", include("app.urls", namespace="app")),
     path('admin/', admin.site.urls),
 ]
-
-logger = logging.getLogger(__name__)
-logger.info("Fire up RFID Reader Thread")
-event = threading.Event()
-thread = RFIDReaderThread(event)
-thread.start()
-pushbutton_service = PushButtonService()
-logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
+if not sys.argv[0].endswith('manage.py'):
+    logger = logging.getLogger(__name__)
+    logger.info("Fire up RFID Reader Thread")
+    event = threading.Event()
+    thread = RFIDReaderThread(event)
+    thread.start()
+    pushbutton_service = PushButtonService()
+    logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
