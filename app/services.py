@@ -138,6 +138,21 @@ class SpotifyPlayer:
         configuration = Configuration.objects.first()
         self.spotipy_spotify.start_playback(device_id=configuration.spotify_speaker_id,uris=track_uris)
 
+    def __get_current_volume(self):
+        spotify_result = self.spotipy_spotify.current_playback()
+
+        return spotify_result["device"]["volume_percent"]
+
+    def volume_up(self):
+        volume = self.__get_current_volume()+10
+        if (volume<101):
+            self.spotipy_spotify.volume(volume_percent=volume)
+
+    def volume_down(self):
+        volume = self.__get_current_volume() - 10
+        if (volume > 0):
+            self.spotipy_spotify.volume(volume_percent=volume)
+
     def next_song(self):
         self.spotipy_spotify.next_track()
 
@@ -171,14 +186,14 @@ class PushButtonService:
     spotify_player = None
 
     def button_forward(self, channel):
-        self.spotify_player.next_song()
+        self.spotify_player.volume_up()
         self.forward_counter += 1
-        self.logger.debug("{}# Forward Button was pushed!".format(self.forward_counter))
+        self.logger.debug("{}# Volume UP Button was pushed!".format(self.forward_counter))
 
     def button_backward(self, channel):
-        self.spotify_player.previous_song()
+        self.spotify_player.volume_down()
         self.backward_counter += 1
-        self.logger.debug("{}# Backward Button was pushed!".format(self.backward_counter))
+        self.logger.debug("{}# Volume Down Button was pushed!".format(self.backward_counter))
 
     def __init__(self):
         scope = "user-read-playback-state,user-modify-playback-state"
@@ -187,5 +202,5 @@ class PushButtonService:
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_forward, bouncetime=1000)
-        GPIO.add_event_detect(12, GPIO.RISING, callback=self.button_backward, bouncetime=1000)
+        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_forward, bouncetime=500)
+        GPIO.add_event_detect(12, GPIO.RISING, callback=self.button_backward, bouncetime=500)

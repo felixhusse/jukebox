@@ -8,8 +8,12 @@ import threading
 import os
 from .models import Configuration, MusicCard
 from .forms import ConfigurationForm
-from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService
+from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService, PushButtonService
 from .threads import RFIDReaderThread
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    from Mock import GPIO
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +61,7 @@ def stop_thread(request):
     for thread in threads:
         if thread.name == "RFID_Thread":
             thread.event.set()
+            GPIO.cleanup()
             messages.add_message(request, messages.SUCCESS, "Thread stopped")
 
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
@@ -72,6 +77,7 @@ def start_thread(request):
     event = threading.Event()
     thread = RFIDReaderThread(event)
     thread.start()
+    pushbutton_service = PushButtonService()
     messages.add_message(request, messages.SUCCESS, "Thread started")
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
 
