@@ -1,14 +1,14 @@
 import logging
-import sys, os
+import os
 import spotipy.cache_handler
 from spotipy.oauth2 import SpotifyOAuth
-from spotipy.exceptions import SpotifyException
+
+
+from .rfid import reader
 
 try:
     import RPi.GPIO as GPIO
-    from app.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
 except ImportError:
-    from app.mockups import SimpleMFRC522
     from Mock import GPIO
 
 from .models import Configuration, MusicCard
@@ -167,16 +167,16 @@ class RFIDCardReader:
     logger = logging.getLogger(__name__)
 
     def __init__(self):
-        self.reader = SimpleMFRC522()
+        self.reader = reader.Reader(0xffff, 0x0035, 84, 16, should_reset=True, debug=True)
+        self.reader.initialize()
 
     def read_uid(self):
         try:
-            id, text = self.reader.read()
+            card_uid = self.reader.read()
             self.logger.debug("Read Card")
         finally:
-            self.reader.READER.Close_MFRC522()
-            GPIO.cleanup()
-        return id
+            self.reader.disconnect()
+        return card_uid
 
 
 class PushButtonService:
