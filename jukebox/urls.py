@@ -28,10 +28,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 if not sys.argv[0].endswith('manage.py'):
-    logger = logging.getLogger(__name__)
-    logger.info("Fire up RFID Reader Thread")
-    event = threading.Event()
-    thread = RFIDReaderThread(event)
-    thread.start()
-    pushbutton_service = PushButtonService()
-    logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
+    try:
+        logger = logging.getLogger(__name__)
+        logger.info("Fire up RFID Reader Thread")
+        event = threading.Event()
+        thread = RFIDReaderThread(event)
+        thread.start()
+        pushbutton_service = PushButtonService()
+        logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
+    except Exception as e:
+        logging.exception("Startup Thread Exception")
