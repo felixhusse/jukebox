@@ -12,7 +12,7 @@ class ReadException(Exception):
     pass
 
 
-class Reader(object):
+class NeuftechReader(object):
     def __init__(self, vendor_id, product_id, data_size, chunk_size, should_reset, debug=False):
         """
         :param vendor_id: USB vendor id (check dmesg or lsusb under Linux)

@@ -6,6 +6,10 @@ from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 class Configuration(models.Model):
+    class ReaderType(models.TextChoices):
+        NEUFTECH = 'NEUF', _('Neuftech')
+        MFRC522 = 'MFRC', _('MFRC 522')
+
     push_button_default = {
         "forward": 10,
         "backward": 12,
@@ -17,6 +21,7 @@ class Configuration(models.Model):
     spotify_speaker_id = models.CharField(max_length=100, default="")
     current_card_uid = models.CharField(max_length=200, default="")
     jukebox_push_buttons = models.JSONField(default=push_button_default)
+    reader_type = models.CharField(max_length=4, choices=ReaderType.choices, default=ReaderType.NEUFTECH)
 
 
 class MusicCard(models.Model):

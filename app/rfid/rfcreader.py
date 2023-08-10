@@ -2,7 +2,7 @@ try:
     import RPi.GPIO as GPIO
     from mfrc522 import MFRC522, SimpleMFRC522
 except ImportError:
-    from .mockups import MFRC522, GPIO, SimpleMFRC522
+    from app.mockups import MFRC522, GPIO, SimpleMFRC522
 
 class HigherGainSimpleMFRC522(SimpleMFRC522):
 

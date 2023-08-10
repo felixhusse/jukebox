@@ -4,7 +4,7 @@ import spotipy.cache_handler
 from spotipy.oauth2 import SpotifyOAuth
 
 
-from .rfid import reader
+from .rfid import neuftechreader
 
 try:
     import RPi.GPIO as GPIO
@@ -161,22 +161,6 @@ class SpotifyPlayer:
 
     def stop_song(self):
         self.spotipy_spotify.pause_playback()
-
-
-class RFIDCardReader:
-    logger = logging.getLogger(__name__)
-
-    def __init__(self):
-        self.reader = reader.Reader(0xffff, 0x0035, 84, 16, should_reset=True, debug=True)
-        self.reader.initialize()
-
-    def read_uid(self):
-        try:
-            card_uid = self.reader.read()
-            self.logger.debug("Read Card")
-        finally:
-            self.reader.disconnect()
-        return card_uid
 
 
 class PushButtonService:

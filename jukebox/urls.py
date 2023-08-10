@@ -16,10 +16,12 @@ Including another URLconf
 """
 import logging
 import threading
-from app.threads import RFIDReaderThread
+from app.rfid.threads import RFIDReaderThread
 from app.services import PushButtonService
 from django.contrib import admin
 from django.urls import path, include
+from app.models import Configuration
+
 import sys
 
 
@@ -32,7 +34,8 @@ if not sys.argv[0].endswith('manage.py'):
         logger = logging.getLogger(__name__)
         logger.info("Fire up RFID Reader Thread")
         event = threading.Event()
-        thread = RFIDReaderThread(event)
+        configuration = Configuration.objects.first()
+        thread = RFIDReaderThread(event=event,reader_type=configuration.reader_type)
         thread.start()
         pushbutton_service = PushButtonService()
         logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))

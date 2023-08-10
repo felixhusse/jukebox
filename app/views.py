@@ -9,11 +9,15 @@ import os
 from .models import Configuration, MusicCard
 from .forms import ConfigurationForm
 from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService, PushButtonService
-from .threads import RFIDReaderThread
+from app.rfid.threads import RFIDReaderThread
+from app.rfid import neuftechreader
+
 try:
     import RPi.GPIO as GPIO
+    from app.rfid.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
 except ImportError:
     from Mock import GPIO
+    from app.mockups import SimpleMFRC522
 
 logger = logging.getLogger(__name__)
 
@@ -75,8 +79,10 @@ def start_thread(request):
             return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
 
     event = threading.Event()
-    thread = RFIDReaderThread(event)
+    configuration = Configuration.objects.first()
+    thread = RFIDReaderThread(event=event, reader_type=configuration.reader_type)
     thread.start()
+    GPIO.cleanup()
     pushbutton_service = PushButtonService()
     messages.add_message(request, messages.SUCCESS, "Thread started")
     return JsonResponse({"result": "Done", "messages": prepare_messages(request)})
@@ -119,14 +125,26 @@ def create_card(request):
     spotify_uid = request.POST.get('spotify_uid')
     spotify_type = request.POST.get('spotify_type')
     music_type = MusicCard.Type(spotify_type)
-    rfid_reader = RFIDCardReader()
-    card_uid = rfid_reader.read_uid()
-    scope = "user-read-playback-state,user-modify-playback-state"
-    spotify_details = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope)).load_detail(
-        spotify_uid=spotify_uid, card_type=music_type)
-    AntoniaService.train_card(card_uid=card_uid, spotify_uid=spotify_uid, spotify_type=music_type,
-                              spotify_details=spotify_details)
-    messages.add_message(request, messages.SUCCESS, "Card succesfully trained")
+    configuration = Configuration.objects.first()
+    card_uid = None
+    if configuration.reader_type == Configuration.ReaderType.NEUFTECH:
+        rfid_reader = neuftechreader.NeuftechReader(0xffff, 0x0035, 84, 16, should_reset=False)
+        rfid_reader.initialize()
+        card_uid = rfid_reader.read()
+    elif configuration.reader_type == Configuration.ReaderType.MFRC522:
+        rfid_reader = SimpleMFRC522()
+        card_uid, payload = rfid_reader.read()
+
+    if card_uid:
+        scope = "user-read-playback-state,user-modify-playback-state"
+        spotify_details = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope)).load_detail(
+            spotify_uid=spotify_uid, card_type=music_type)
+        AntoniaService.train_card(card_uid=card_uid, spotify_uid=spotify_uid, spotify_type=music_type,
+                                  spotify_details=spotify_details)
+        messages.add_message(request, messages.SUCCESS, "Card succesfully trained")
+    else:
+        messages.add_message(request, messages.ERROR, "Couldn't read Card UID")
+
     cards = MusicCard.objects.all()
     return render(request, 'pages/card-list.html', {"cards": cards})
 
