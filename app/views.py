@@ -8,7 +8,7 @@ import threading
 import os
 from .models import Configuration, MusicCard
 from .forms import ConfigurationForm
-from .services import SpotifyConnection, RFIDCardReader, SpotifyPlayer, AntoniaService, PushButtonService
+from .services import SpotifyConnection, SpotifyPlayer, AntoniaService, PushButtonService
 from app.rfid.threads import RFIDReaderThread
 from app.rfid import neuftechreader
 

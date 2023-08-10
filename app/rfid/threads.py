@@ -58,7 +58,7 @@ class RFIDReaderThread(Thread):
                     none_count = 0
                 elif not card_uid and playing_song:
                     none_count = none_count + 1
-                    if none_count > 1:
+                    if none_count > 3:
                         self.stop_playback()
                         playing_song = False
                         none_count = 0

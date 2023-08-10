@@ -129,13 +129,16 @@ class SpotifyPlayer:
 
     def play_song(self, spotify_uid, spotify_type):
         track_uris = []
+        configuration = Configuration.objects.first()
         if "album" == spotify_type:
-            album = self.spotipy_spotify.album('spotify:{}'.format(spotify_uid))
+            #track_uris.append('spotify:{0}:{1}'.format(spotify_type, spotify_uid))
+            #self.spotipy_spotify.start_playback(device_id=configuration.spotify_speaker_id, context_uri=track_uris)
+            album = self.spotipy_spotify.album(album_id=spotify_uid)
             for track in album['tracks']['items']:
                 track_uris.append(track['uri'])
+            self.logger.debug("Track uris #{0} appended.".format(len(track_uris)))
         else:
             track_uris.append('spotify:{0}:{1}'.format(spotify_type,spotify_uid))
-        configuration = Configuration.objects.first()
         self.spotipy_spotify.start_playback(device_id=configuration.spotify_speaker_id,uris=track_uris)
 
     def __get_current_volume(self):
@@ -144,14 +147,23 @@ class SpotifyPlayer:
         return spotify_result["device"]["volume_percent"]
 
     def volume_up(self):
-        volume = self.__get_current_volume()+10
-        if (volume<101):
-            self.spotipy_spotify.volume(volume_percent=volume)
+        current_volume = self.__get_current_volume()
+
+        if current_volume < 100:
+            volume = current_volume+10
+            if volume > 100:
+                self.spotipy_spotify.volume(volume_percent=100)
+            else:
+                self.spotipy_spotify.volume(volume_percent=volume)
 
     def volume_down(self):
-        volume = self.__get_current_volume() - 10
-        if (volume > 0):
-            self.spotipy_spotify.volume(volume_percent=volume)
+        current_volume = self.__get_current_volume()
+        if current_volume > 0:
+            volume = current_volume-10
+            if volume < 0:
+                self.spotipy_spotify.volume(volume_percent=0)
+            else:
+                self.spotipy_spotify.volume(volume_percent=volume)
 
     def next_song(self):
         self.spotipy_spotify.next_track()
@@ -169,12 +181,12 @@ class PushButtonService:
     backward_counter = 0
     spotify_player = None
 
-    def button_forward(self, channel):
+    def button_volup(self, channel):
         self.spotify_player.volume_up()
         self.forward_counter += 1
         self.logger.debug("{}# Volume UP Button was pushed!".format(self.forward_counter))
 
-    def button_backward(self, channel):
+    def button_voldown(self, channel):
         self.spotify_player.volume_down()
         self.backward_counter += 1
         self.logger.debug("{}# Volume Down Button was pushed!".format(self.backward_counter))
@@ -182,9 +194,9 @@ class PushButtonService:
     def __init__(self):
         scope = "user-read-playback-state,user-modify-playback-state"
         self.spotify_player = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope))
-        GPIO.setwarnings(False)
+        GPIO.setwarnings(True)
         GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(8, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_forward, bouncetime=500)
-        GPIO.add_event_detect(12, GPIO.RISING, callback=self.button_backward, bouncetime=500)
+        GPIO.add_event_detect(8, GPIO.RISING, callback=self.button_volup, bouncetime=500)
+        GPIO.add_event_detect(10, GPIO.RISING, callback=self.button_voldown, bouncetime=500)
