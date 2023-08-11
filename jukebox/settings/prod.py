@@ -1,6 +1,7 @@
 # prod.py
 # Production settings for myapp
 from . import *  # Import base settings from settings/__init__.py
+from . import env
 
 LOGGING = {
     "version": 1,
