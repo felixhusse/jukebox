@@ -131,12 +131,14 @@ class SpotifyPlayer:
         track_uris = []
         configuration = Configuration.objects.first()
         if "album" == spotify_type:
-            #track_uris.append('spotify:{0}:{1}'.format(spotify_type, spotify_uid))
-            #self.spotipy_spotify.start_playback(device_id=configuration.spotify_speaker_id, context_uri=track_uris)
             album = self.spotipy_spotify.album(album_id=spotify_uid)
             for track in album['tracks']['items']:
                 track_uris.append(track['uri'])
-            self.logger.debug("Track uris #{0} appended.".format(len(track_uris)))
+        elif "playlist" == spotify_type:
+            track_uris = []
+            playlist = self.spotipy_spotify.playlist_items(playlist_id=spotify_uid)
+            for track in playlist['items']:
+                track_uris.append(track['track']['uri'])
         else:
             track_uris.append('spotify:{0}:{1}'.format(spotify_type,spotify_uid))
         self.spotipy_spotify.start_playback(device_id=configuration.spotify_speaker_id,uris=track_uris)
