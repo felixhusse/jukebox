@@ -1,11 +1,8 @@
 import logging
 import os
 import spotipy.cache_handler
+import requests
 from spotipy.oauth2 import SpotifyOAuth
-
-
-from .rfid import neuftechreader
-
 try:
     import RPi.GPIO as GPIO
 except ImportError:
@@ -45,6 +42,27 @@ class AntoniaService:
         if cards:
             card = cards.first()
             card.delete()
+
+    @staticmethod
+    def get_card_detail(music_card):
+        track_uris = []
+        scope = "user-read-playback-state,user-modify-playback-state"
+        spotify_connection = SpotifyConnection(scope=scope)
+        spotipy_spotify = spotipy.Spotify(auth_manager=spotify_connection.auth_manager)
+
+        if MusicCard.Type.ALBUM == music_card.spotify_type:
+            album = spotipy_spotify.album(album_id=music_card.spotify_uid)
+            for track in album['tracks']['items']:
+                track_uris.append(track['id'])
+        elif MusicCard.Type.PLAYLIST == music_card.spotify_type:
+            track_uris = []
+            playlist = spotipy_spotify.playlist_items(playlist_id=music_card.spotify_uid)
+            for track in playlist['items']:
+                track_uris.append(track['track']['id'])
+        else:
+            track_uris.append('{}'.format(music_card.spotify_uid))
+
+        return track_uris
 
 class SpotifyConnection:
     logger = logging.getLogger(__name__)
@@ -177,6 +195,29 @@ class SpotifyPlayer:
         self.spotipy_spotify.pause_playback()
 
 
+class PsstPlayer:
+
+    @staticmethod
+    def set_volume(volume, hostname="localhost", port="8080"):
+        logger = logging.getLogger(__name__)
+        request = requests.get('http://{}:{}/volume/{}'.format(hostname, port, volume))
+        logger.debug("[PSST-Client] Setting volume to {}.".format(volume))
+
+    @staticmethod
+    def start(track_ids, hostname="localhost", port="8080"):
+        logger = logging.getLogger(__name__)
+        payload = {"tracks": track_ids}
+        request = requests.post('http://{}:{}/start'.format(hostname, port), data=payload)
+        logger.debug("[PSST-Client] Start playback.")
+
+    @staticmethod
+    def stop(hostname="localhost", port="8080"):
+        logger = logging.getLogger(__name__)
+        request = requests.get('http://{}:{}/stop'.format(hostname, port))
+        logger.debug("[PSST-Client] Stopping playback.")
+
+
+
 class PushButtonService:
     logger = logging.getLogger(__name__)
     forward_counter = 0
@@ -184,13 +225,28 @@ class PushButtonService:
     spotify_player = None
 
     def button_volup(self, channel):
-        self.spotify_player.volume_up()
-        self.forward_counter += 1
+        configuration = Configuration.objects.first()
+        if Configuration.SpotifyType.WEBAPI == configuration.jukebox_spotify_type:
+            self.spotify_player.volume_up()
+            self.forward_counter += 1
+        elif Configuration.SpotifyType.PSST == configuration.jukebox_spotify_type:
+            volume = configuration.jukebox_volume + 0.1
+            PsstPlayer.set_volume(volume)
+            configuration.jukebox_volume = volume
+            configuration.save()
+
         self.logger.debug("{}# Volume UP Button was pushed!".format(self.forward_counter))
 
     def button_voldown(self, channel):
-        self.spotify_player.volume_down()
-        self.backward_counter += 1
+        configuration = Configuration.objects.first()
+        if Configuration.SpotifyType.WEBAPI == configuration.jukebox_spotify_type:
+            self.spotify_player.volume_down()
+            self.backward_counter += 1
+        elif Configuration.SpotifyType.PSST == configuration.jukebox_spotify_type:
+            volume = configuration.jukebox_volume - 0.1
+            PsstPlayer.set_volume(volume)
+            configuration.jukebox_volume = volume
+            configuration.save()
         self.logger.debug("{}# Volume Down Button was pushed!".format(self.backward_counter))
 
     def __init__(self):

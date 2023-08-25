@@ -10,6 +10,10 @@ class Configuration(models.Model):
         NEUFTECH = 'NEUF', _('Neuftech')
         MFRC522 = 'MFRC', _('MFRC 522')
 
+    class SpotifyType(models.TextChoices):
+        PSST = 'PSST', _('Psst Client')
+        WEBAPI = 'WEB', _('Spotify Web API')
+
     push_button_default = {
         "forward": 10,
         "backward": 12,
@@ -22,6 +26,8 @@ class Configuration(models.Model):
     current_card_uid = models.CharField(max_length=200, default="")
     jukebox_push_buttons = models.JSONField(default=push_button_default)
     reader_type = models.CharField(max_length=4, choices=ReaderType.choices, default=ReaderType.NEUFTECH)
+    jukebox_volume = models.FloatField(default=0.5)
+    jukebox_spotify_type = models.CharField(max_length=4, choices=SpotifyType.choices, default=SpotifyType.WEBAPI)
 
 
 class MusicCard(models.Model):

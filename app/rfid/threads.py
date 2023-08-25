@@ -4,13 +4,15 @@ import time
 import logging
 from app.rfid import neuftechreader
 from spotipy import SpotifyException
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    from Mock import GPIO
 
-import RPi.GPIO as GPIO
 from app.rfid.rfcreader import HigherGainSimpleMFRC522 as SimpleMFRC522
-
-
-from app.services import SpotifyConnection, SpotifyPlayer
+from app.services import SpotifyConnection, SpotifyPlayer, AntoniaService, PsstPlayer
 from app.models import Configuration, MusicCard
+
 
 class RFIDReaderThread(Thread):
     logger = logging.getLogger(__name__)
@@ -26,18 +28,27 @@ class RFIDReaderThread(Thread):
         self.event = event
 
     def stop_playback(self):
-        scope = "user-read-playback-state,user-modify-playback-state"
-        spotify_player = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope))
-        spotify_player.stop_song()
         configuration = Configuration.objects.first()
+        if Configuration.SpotifyType.WEBAPI == configuration.jukebox_spotify_type:
+            scope = "user-read-playback-state,user-modify-playback-state"
+            spotify_player = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope))
+            spotify_player.stop_song()
+        elif Configuration.SpotifyType.PSST == configuration.jukebox_spotify_type:
+            PsstPlayer.stop()
+
         configuration.current_card_uid = ""
         configuration.save()
 
     def start_playback(self, current_card):
-        scope = "user-read-playback-state,user-modify-playback-state"
-        spotify_player = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope))
-        spotify_player.play_song(current_card.spotify_uid, current_card.get_spotify_music_type_display().lower())
         configuration = Configuration.objects.first()
+        if Configuration.SpotifyType.WEBAPI == configuration.jukebox_spotify_type:
+            scope = "user-read-playback-state,user-modify-playback-state"
+            spotify_player = SpotifyPlayer(spotiy_connection=SpotifyConnection(scope=scope))
+            spotify_player.play_song(current_card.spotify_uid, current_card.get_spotify_music_type_display().lower())
+        elif Configuration.SpotifyType.PSST == configuration.jukebox_spotify_type:
+            track_ids = AntoniaService.get_card_detail(current_card)
+            PsstPlayer.start(track_ids)
+
         configuration.current_card_uid = current_card.card_uid
         configuration.save()
 
