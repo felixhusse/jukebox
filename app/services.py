@@ -2,6 +2,7 @@ import logging
 import os
 import spotipy.cache_handler
 import requests
+import json
 from spotipy.oauth2 import SpotifyOAuth
 try:
     import RPi.GPIO as GPIO
@@ -50,11 +51,11 @@ class AntoniaService:
         spotify_connection = SpotifyConnection(scope=scope)
         spotipy_spotify = spotipy.Spotify(auth_manager=spotify_connection.auth_manager)
 
-        if MusicCard.Type.ALBUM == music_card.spotify_type:
+        if MusicCard.Type.ALBUM == music_card.spotify_music_type:
             album = spotipy_spotify.album(album_id=music_card.spotify_uid)
             for track in album['tracks']['items']:
                 track_uris.append(track['id'])
-        elif MusicCard.Type.PLAYLIST == music_card.spotify_type:
+        elif MusicCard.Type.PLAYLIST == music_card.spotify_music_type:
             track_uris = []
             playlist = spotipy_spotify.playlist_items(playlist_id=music_card.spotify_uid)
             for track in playlist['items']:
@@ -207,8 +208,11 @@ class PsstPlayer:
     def start(track_ids, hostname="localhost", port="8080"):
         logger = logging.getLogger(__name__)
         payload = {"tracks": track_ids}
-        request = requests.post('http://{}:{}/start'.format(hostname, port), data=payload)
+        result = json.dumps(payload)
         logger.debug("[PSST-Client] Start playback.")
+        logger.debug("[PSST-Client]Payload {}".format(result))
+        request = requests.post('http://{}:{}/playlist/start'.format(hostname, port), json=payload)
+
 
     @staticmethod
     def stop(hostname="localhost", port="8080"):
