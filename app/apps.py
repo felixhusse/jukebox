@@ -14,8 +14,8 @@ class AppConfig(AppConfig):
 
     def ready(self):
         from app.models import Configuration
-        from rfid.threads import RFIDReaderThread
-        from services import PushButtonService, PsstPlayer
+        from app.rfid.threads import RFIDReaderThread
+        from app.services import PushButtonService, PsstPlayer
 
         if not sys.argv[0].endswith('manage.py'):
             try:
