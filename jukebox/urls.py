@@ -17,7 +17,7 @@ Including another URLconf
 import logging
 import threading
 from app.rfid.threads import RFIDReaderThread
-from app.services import PushButtonService
+from app.services import PushButtonService, PsstPlayer
 from django.contrib import admin
 from django.urls import path, include
 from app.models import Configuration
@@ -39,5 +39,8 @@ if not sys.argv[0].endswith('manage.py'):
         thread.start()
         pushbutton_service = PushButtonService()
         logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
+        if configuration.jukebox_spotify_type == Configuration.SpotifyType.PSST:
+            PsstPlayer.set_volume(0.6)
+
     except Exception as e:
         logging.exception("Startup Thread Exception")
