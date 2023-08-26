@@ -14,33 +14,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-import logging
-import threading
-from app.rfid.threads import RFIDReaderThread
-from app.services import PushButtonService, PsstPlayer
+
 from django.contrib import admin
 from django.urls import path, include
-from app.models import Configuration
 
-import sys
 
 
 urlpatterns = [
     path("", include("app.urls", namespace="app")),
     path('admin/', admin.site.urls),
 ]
-if not sys.argv[0].endswith('manage.py'):
-    try:
-        logger = logging.getLogger(__name__)
-        logger.info("Fire up RFID Reader Thread")
-        event = threading.Event()
-        configuration = Configuration.objects.first()
-        thread = RFIDReaderThread(event=event,reader_type=configuration.reader_type)
-        thread.start()
-        pushbutton_service = PushButtonService()
-        logger.warning("ThreadDetails: {} ({}) {}".format(thread.name, thread.ident, thread.daemon))
-        if configuration.jukebox_spotify_type == Configuration.SpotifyType.PSST:
-            PsstPlayer.set_volume(0.6)
 
-    except Exception as e:
-        logging.exception("Startup Thread Exception")
